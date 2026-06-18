@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Phone, Mail } from "lucide-react";
 import { STORE_ADDRESS, STORE_EMAIL, STORE_INSTAGRAM, STORE_PHONE } from "@/lib/constants";
 
@@ -9,12 +10,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand */}
           <div>
-            <p
-              className="text-3xl tracking-[0.15em] uppercase font-light mb-4"
-              style={{ fontFamily: "var(--font-cormorant)" }}
-            >
-              Hoa Ly
-            </p>
+            <Image
+              src="/images/Logo Hoaly.png"
+              alt="Hoa Ly Paris"
+              width={90}
+              height={90}
+              className="mb-4 w-[90px] h-[90px] object-contain"
+              style={{ filter: "brightness(0) invert(1)" }}
+            />
             <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-xs">
               Prêt-à-porter féminin contemporain au cœur du 13e arrondissement de Paris.
             </p>

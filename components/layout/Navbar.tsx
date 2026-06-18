@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,12 +34,17 @@ export default function Navbar() {
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         {/* Logo */}
-        <Link
-          href="/"
-          className="text-2xl tracking-[0.15em] uppercase font-light"
-          style={{ fontFamily: "var(--font-cormorant)" }}
-        >
-          Hoa Ly
+        <Link href="/" className="flex items-center">
+          <div className="w-11 h-11 rounded-full overflow-hidden ring-1 ring-white/20 shadow-sm">
+            <Image
+              src="/images/Logo Hoaly.png"
+              alt="Hoa Ly Paris"
+              width={44}
+              height={44}
+              className="w-full h-full object-cover"
+              priority
+            />
+          </div>
         </Link>
 
         {/* Desktop nav */}
