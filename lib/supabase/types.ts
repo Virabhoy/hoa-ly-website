@@ -10,6 +10,19 @@ export interface Category {
   created_at: string;
 }
 
+// Collection saisonnière (ex. Printemps-Été 2026). Pas encore de table Supabase : données de démo.
+export interface Collection {
+  id: string;
+  slug: string;
+  name: string;
+  short_name: string;
+  description: string | null;
+  cover_image: string | null;
+  is_archived: boolean;
+  display_order: number;
+  created_at: string;
+}
+
 export interface Product {
   id: string;
   slug: string;

@@ -1,4 +1,4 @@
-import type { Category, Product, ProductVariant } from "./supabase/types";
+import type { Category, Collection, Product, ProductVariant } from "./supabase/types";
 
 const U = (id: string, w = 800, h = 1067) =>
   `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
@@ -13,6 +13,15 @@ export const DEMO_CATEGORIES: Category[] = [
   { id: "cat-4", slug: "pantalons", name: "Pantalons & Ensembles", description: "Ensembles et pantalons contemporains", cover_image: L("D04B9089.jpg"), display_order: 3, created_at: "" },
   { id: "cat-5", slug: "vestes", name: "Vestes & Manteaux", description: "Vestes traditionnelles et manteaux d'exception", cover_image: L("D04B8902.jpg"), display_order: 4, created_at: "" },
   { id: "cat-6", slug: "accessoires", name: "Accessoires", description: "Sacs, ceintures et foulards", cover_image: U("1584917865442-de89df76afd3"), display_order: 5, created_at: "" },
+];
+
+// ─── Collections saisonnières ─────────────────────────────────────
+export const DEMO_COLLECTIONS: Collection[] = [
+  { id: "col-1", slug: "printemps-ete-2026", name: "Printemps-Été 2026", short_name: "PE 2026", description: "Soies légères, áo dài fleuris et bleus lumineux pour accueillir les beaux jours.", cover_image: L("D04B9112.jpg"), is_archived: false, display_order: 0, created_at: "" },
+  { id: "col-2", slug: "automne-hiver-2025", name: "Automne-Hiver 2025", short_name: "AH 2025", description: "Satins profonds, broderies dragon et noirs intenses : l'élégance des soirées d'hiver.", cover_image: L("D04B9128.jpg"), is_archived: false, display_order: 1, created_at: "" },
+  { id: "col-3", slug: "printemps-ete-2025", name: "Printemps-Été 2025", short_name: "PE 2025", description: "Imprimés wax et couleurs éclatantes, une collection joyeuse photographiée à Paris.", cover_image: L("D04B8981.jpg"), is_archived: false, display_order: 2, created_at: "" },
+  { id: "col-4", slug: "automne-hiver-2024", name: "Automne-Hiver 2024", short_name: "AH 2024", description: "Ensembles kung fu et broderies en relief, entre tradition et allure urbaine.", cover_image: L("D04B9149.jpg"), is_archived: true, display_order: 3, created_at: "" },
+  { id: "col-5", slug: "printemps-ete-2024", name: "Printemps-Été 2024", short_name: "PE 2024", description: "Kimonos fleuris et tons bordeaux, une ode au romantisme asiatique.", cover_image: L("D04B9153.jpg"), is_archived: true, display_order: 4, created_at: "" },
 ];
 
 // ─── Variantes helpers ────────────────────────────────────────────

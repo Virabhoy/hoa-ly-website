@@ -1,7 +1,8 @@
 import { createServerClient } from "./server";
-import type { Category, Product } from "./types";
+import type { Category, Collection, Product } from "./types";
 import {
   DEMO_CATEGORIES,
+  DEMO_COLLECTIONS,
   DEMO_PRODUCTS,
   getDemoCategoryBySlug,
   getDemoProductsByCategory,
@@ -134,6 +135,11 @@ export async function getAllProducts(): Promise<Product[]> {
   } catch {
     return DEMO_PRODUCTS;
   }
+}
+
+// Collections saisonnières : pas encore de table Supabase, on sert les données de démo.
+export async function getCollections(): Promise<Collection[]> {
+  return DEMO_COLLECTIONS;
 }
 
 export async function getSetting(key: string): Promise<unknown> {
