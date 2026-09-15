@@ -27,6 +27,80 @@ function sizes(productId: string, colorName: string, colorHex: string, stocks: n
 
 // ─── Produits ─────────────────────────────────────────────────────
 export const DEMO_PRODUCTS: Product[] = [
+  // ── NOUVEAUTÉS ── (photos d'illustration Unsplash)
+  {
+    id: "p-n1", slug: "robe-midi-pois-rouge", name: "Robe Midi à Pois Rouge",
+    description: "Robe midi rouge à pois blancs, jupe ample et fluide qui danse au moindre mouvement. Une silhouette rétro et solaire pour la nouvelle saison.",
+    category_id: "cat-1", price: 89.00,
+    images: [U("1502716119720-b23a93e5fe1b")],
+    cover_image: U("1502716119720-b23a93e5fe1b"), is_featured: false, is_active: true, display_order: 0, created_at: "", updated_at: "",
+    category: DEMO_CATEGORIES[0],
+    variants: [...sizes("p-n1", "Rouge à pois", "#C0392B", [3, 7, 10, 7, 3, 1])],
+  },
+  {
+    id: "p-n2", slug: "robe-portefeuille-fleurie", name: "Robe Portefeuille Fleurie",
+    description: "Robe portefeuille légère à imprimé floral rouge et vert sur fond crème. Encolure croisée et tombé fluide, parfaite pour les beaux jours et les escapades au bord de la mer.",
+    category_id: "cat-1", price: 95.00,
+    images: [U("1496747611176-843222e1e57c")],
+    cover_image: U("1496747611176-843222e1e57c"), is_featured: false, is_active: true, display_order: 1, created_at: "", updated_at: "",
+    category: DEMO_CATEGORIES[0],
+    variants: [...sizes("p-n2", "Crème fleuri", "#F5F0E8", [2, 6, 8, 6, 3, 1])],
+  },
+  {
+    id: "p-n3", slug: "blouse-volantee-rose-poudre", name: "Blouse Volantée Rose Poudré",
+    description: "Blouse épaules dénudées en voile rose poudré, volants superposés et manches bouffantes. Romantique et aérienne, elle se porte avec un jean ou une jupe longue.",
+    category_id: "cat-1", price: 62.00,
+    images: [U("1581044777550-4cfa60707c03")],
+    cover_image: U("1581044777550-4cfa60707c03"), is_featured: false, is_active: true, display_order: 2, created_at: "", updated_at: "",
+    category: DEMO_CATEGORIES[0],
+    variants: [...sizes("p-n3", "Rose poudré", "#E8C4B8", [4, 8, 10, 8, 4, 1])],
+  },
+  {
+    id: "p-n4", slug: "robe-rouge-drapee-traine", name: "Robe Rouge Drapée à Traîne",
+    description: "Robe rouge courte et ajustée, prolongée d'un grand drapé en traîne sur le côté. La pièce de soirée par excellence, pour les grandes occasions et les fêtes de fin d'année.",
+    category_id: "cat-1", price: 139.00,
+    images: [U("1612336307429-8a898d10e223")],
+    cover_image: U("1612336307429-8a898d10e223"), is_featured: false, is_active: true, display_order: 3, created_at: "", updated_at: "",
+    category: DEMO_CATEGORIES[0],
+    variants: [...sizes("p-n4", "Rouge", "#B22222", [1, 4, 6, 4, 2, 0])],
+  },
+  {
+    id: "p-n5", slug: "trench-long-bleu-ciel", name: "Trench Long Bleu Ciel",
+    description: "Trench long bleu ciel, coupe ample et col à revers. Une touche de couleur douce pour les journées de mi-saison, à porter ouvert ou fermé.",
+    category_id: "cat-1", price: 149.00,
+    images: [U("1539109136881-3be0616acf4b")],
+    cover_image: U("1539109136881-3be0616acf4b"), is_featured: false, is_active: true, display_order: 4, created_at: "", updated_at: "",
+    category: DEMO_CATEGORIES[0],
+    variants: [...sizes("p-n5", "Bleu ciel", "#9CC3E6", [2, 4, 6, 4, 2, 0])],
+  },
+  {
+    id: "p-n6", slug: "chemise-brodee-fleurettes", name: "Chemise Brodée Fleurettes",
+    description: "Chemise blanche en coton brodée de petites fleurs colorées. Se porte nouée à la taille avec un jean pour une allure fraîche et décontractée.",
+    category_id: "cat-1", price: 69.00,
+    images: [U("1564257631407-4deb1f99d992")],
+    cover_image: U("1564257631407-4deb1f99d992"), is_featured: false, is_active: true, display_order: 5, created_at: "", updated_at: "",
+    category: DEMO_CATEGORIES[0],
+    variants: [...sizes("p-n6", "Blanc brodé", "#FAFAFA", [3, 7, 9, 7, 3, 1])],
+  },
+  {
+    id: "p-n7", slug: "jupe-evasee-noire", name: "Jupe Évasée Noire",
+    description: "Jupe courte évasée noire, taille haute. Associée à une chemise rayée, elle compose un look chic et graphique pour le bureau comme pour le week-end.",
+    category_id: "cat-1", price: 49.00,
+    images: [U("1583496661160-fb5886a0aaaa")],
+    cover_image: U("1583496661160-fb5886a0aaaa"), is_featured: false, is_active: true, display_order: 6, created_at: "", updated_at: "",
+    category: DEMO_CATEGORIES[0],
+    variants: [...sizes("p-n7", "Noir", "#0A0A0A", [4, 8, 11, 8, 4, 1])],
+  },
+  {
+    id: "p-n8", slug: "bomber-terracotta", name: "Bomber Terracotta",
+    description: "Blouson bomber léger couleur terracotta, col rond et fermeture zippée. La veste facile qui réchauffe toutes les tenues de la nouvelle saison.",
+    category_id: "cat-1", price: 110.00,
+    images: [U("1591047139829-d91aecb6caea")],
+    cover_image: U("1591047139829-d91aecb6caea"), is_featured: false, is_active: true, display_order: 7, created_at: "", updated_at: "",
+    category: DEMO_CATEGORIES[0],
+    variants: [...sizes("p-n8", "Terracotta", "#C4704F", [2, 5, 7, 5, 2, 0])],
+  },
+
   // ── ROBES ──
   {
     id: "p-r1", slug: "robe-qipao-rouge", name: "Robe Qipao Rouge",

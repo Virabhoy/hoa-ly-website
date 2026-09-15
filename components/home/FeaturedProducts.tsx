@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/lib/supabase/types";
 import { formatPrice } from "@/lib/utils";
+import { OrnamentDivider } from "@/components/ui/ChineseMotifs";
 
 interface FeaturedProductsProps {
   products: Product[];
@@ -14,12 +15,15 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
     <section className="py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-10">
-          <h2
-            className="text-3xl font-light tracking-wide"
-            style={{ fontFamily: "var(--font-cormorant)" }}
-          >
-            Coup de cœur
-          </h2>
+          <div>
+            <h2
+              className="text-3xl font-light tracking-wide"
+              style={{ fontFamily: "var(--font-cormorant)" }}
+            >
+              Coup de cœur
+            </h2>
+            <OrnamentDivider className="mt-2 w-28 text-motif" />
+          </div>
           <Link
             href="/catalogue"
             className="text-xs tracking-widest uppercase text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors border-b border-[#6B6B6B] pb-0.5"

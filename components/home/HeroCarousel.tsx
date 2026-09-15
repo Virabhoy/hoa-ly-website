@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Product } from "@/lib/supabase/types";
 import { formatPrice } from "@/lib/utils";
+import { LatticeCorner } from "@/components/ui/ChineseMotifs";
 
 interface HeroCarouselProps {
   products: Product[];
@@ -25,7 +26,7 @@ export default function HeroCarousel({ products }: HeroCarouselProps) {
 
   if (!products.length) {
     return (
-      <div className="h-[85vh] bg-[#F0EDE8] flex items-center justify-center">
+      <div className="h-[calc(100svh-4rem)] bg-[#F0EDE8] flex items-center justify-center">
         <div className="text-center">
           <p
             className="text-6xl md:text-8xl font-light tracking-[0.2em] uppercase text-[#0A0A0A]"
@@ -48,7 +49,7 @@ export default function HeroCarousel({ products }: HeroCarouselProps) {
   }
 
   return (
-    <div className="relative h-[85vh] overflow-hidden bg-[#0A0A0A]">
+    <div className="relative h-[calc(100svh-4rem)] overflow-hidden bg-[#0A0A0A]">
       {products.map((product, index) => (
         <div
           key={product.id}
@@ -61,7 +62,7 @@ export default function HeroCarousel({ products }: HeroCarouselProps) {
               src={product.cover_image}
               alt={product.name}
               fill
-              className="object-cover object-center"
+              className="object-cover object-top"
               priority={index === 0}
             />
           )}
@@ -87,6 +88,10 @@ export default function HeroCarousel({ products }: HeroCarouselProps) {
           </div>
         </div>
       ))}
+
+      {/* Motifs */}
+      <LatticeCorner className="pointer-events-none absolute top-6 left-6 w-14 sm:w-20 text-white/70" />
+      <LatticeCorner className="pointer-events-none absolute bottom-6 right-6 w-14 sm:w-20 text-white/70 rotate-180" />
 
       {/* Controls */}
       {products.length > 1 && (

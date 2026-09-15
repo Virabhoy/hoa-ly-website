@@ -2,20 +2,23 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Phone, Mail } from "lucide-react";
 import { STORE_ADDRESS, STORE_EMAIL, STORE_INSTAGRAM, STORE_PHONE } from "@/lib/constants";
+import { CloudMotif, FretBorder } from "@/components/ui/ChineseMotifs";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0A0A0A] text-[#FAFAF9] mt-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <footer className="relative bg-[#0A0A0A] text-[#FAFAF9] mt-24 overflow-hidden">
+      <FretBorder className="block text-motif" />
+      <CloudMotif className="pointer-events-none absolute bottom-20 right-6 w-72 text-[#C8A882] opacity-10 hidden md:block" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand */}
           <div>
             <Image
-              src="/images/Logo Hoaly.png"
+              src="/images/logo-hoaly.png"
               alt="Hoa Ly Paris"
-              width={90}
-              height={90}
-              className="mb-4 w-[90px] h-[90px] object-contain"
+              width={387}
+              height={369}
+              className="mb-4 w-28 h-auto"
               style={{ filter: "brightness(0) invert(1)" }}
             />
             <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-xs">
@@ -25,7 +28,7 @@ export default function Footer() {
               href={`https://www.instagram.com/${STORE_INSTAGRAM}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 mt-4 text-sm text-[#C8A882] hover:text-white transition-colors"
+              className="link-underline inline-flex items-center gap-2 mt-4 text-sm text-[#C8A882] hover:text-white transition-colors duration-300"
             >
               @{STORE_INSTAGRAM}
             </a>
@@ -46,7 +49,7 @@ export default function Footer() {
                 <li key={item.slug}>
                   <Link
                     href={`/catalogue/${item.slug}`}
-                    className="text-sm text-[#FAFAF9]/70 hover:text-white transition-colors"
+                    className="link-underline text-sm text-[#FAFAF9]/70 hover:text-white transition-colors duration-300"
                   >
                     {item.label}
                   </Link>
@@ -65,13 +68,13 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <Phone size={14} className="shrink-0 text-[#C8A882]" />
-                <a href={`tel:${STORE_PHONE.replace(/\s/g, "")}`} className="hover:text-white transition-colors">
+                <a href={`tel:${STORE_PHONE.replace(/\s/g, "")}`} className="link-underline hover:text-white transition-colors duration-300">
                   {STORE_PHONE}
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail size={14} className="shrink-0 text-[#C8A882]" />
-                <a href={`mailto:${STORE_EMAIL}`} className="hover:text-white transition-colors">
+                <a href={`mailto:${STORE_EMAIL}`} className="link-underline hover:text-white transition-colors duration-300">
                   {STORE_EMAIL}
                 </a>
               </li>
@@ -84,10 +87,10 @@ export default function Footer() {
             © {new Date().getFullYear()} Hoa Ly — SARL au capital de 95 000 €. Tous droits réservés.
           </p>
           <div className="flex items-center gap-6">
-            <Link href="/mentions-legales" className="text-xs text-[#6B6B6B] hover:text-white transition-colors">
+            <Link href="/mentions-legales" className="link-underline text-xs text-[#6B6B6B] hover:text-white transition-colors duration-300">
               Mentions légales
             </Link>
-            <Link href="/admin" className="text-xs text-[#6B6B6B] hover:text-white transition-colors">
+            <Link href="/admin" className="link-underline text-xs text-[#6B6B6B] hover:text-white transition-colors duration-300">
               Administration
             </Link>
           </div>

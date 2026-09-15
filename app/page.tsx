@@ -33,7 +33,7 @@ export default async function HomePage() {
   return (
     <>
       <Navbar />
-      <main>
+      <main className="pt-16">
         <HeroCarousel products={featured.slice(0, 5)} />
         <CategoryGrid categories={categories} />
         <FeaturedProducts products={featured} />

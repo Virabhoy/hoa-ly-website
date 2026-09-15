@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Category } from "@/lib/supabase/types";
+import { OrnamentDivider } from "@/components/ui/ChineseMotifs";
 
 interface CategoryGridProps {
   categories: Category[];
@@ -12,12 +13,15 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
       <div className="flex items-center justify-between mb-10">
-        <h2
-          className="text-3xl font-light tracking-wide"
-          style={{ fontFamily: "var(--font-cormorant)" }}
-        >
-          Nos Collections
-        </h2>
+        <div>
+          <h2
+            className="text-3xl font-light tracking-wide"
+            style={{ fontFamily: "var(--font-cormorant)" }}
+          >
+            Nos Collections
+          </h2>
+          <OrnamentDivider className="mt-2 w-28 text-motif" />
+        </div>
         <Link
           href="/catalogue"
           className="text-xs tracking-widest uppercase text-[#6B6B6B] hover:text-[#0A0A0A] transition-colors border-b border-[#6B6B6B] pb-0.5"

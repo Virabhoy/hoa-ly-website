@@ -13,6 +13,7 @@ import {
 } from "@/lib/supabase/queries";
 import { formatPrice } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
+import { OrnamentDivider } from "@/components/ui/ChineseMotifs";
 
 interface Params {
   productSlug: string;
@@ -58,11 +59,11 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-xs text-[#6B6B6B] mb-8">
-            <Link href="/" className="hover:text-[#0A0A0A]">
+            <Link href="/" className="link-underline hover:text-[#0A0A0A] transition-colors duration-300">
               Accueil
             </Link>
             <ChevronRight size={12} />
-            <Link href="/catalogue" className="hover:text-[#0A0A0A]">
+            <Link href="/catalogue" className="link-underline hover:text-[#0A0A0A] transition-colors duration-300">
               Catalogue
             </Link>
             {product.category && (
@@ -70,7 +71,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
                 <ChevronRight size={12} />
                 <Link
                   href={`/catalogue/${product.category.slug}`}
-                  className="hover:text-[#0A0A0A]"
+                  className="link-underline hover:text-[#0A0A0A] transition-colors duration-300"
                 >
                   {product.category.name}
                 </Link>
@@ -98,6 +99,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               >
                 {product.name}
               </h1>
+              <OrnamentDivider className="-mt-3 w-28 text-motif" />
               <p className="text-2xl font-light">{formatPrice(product.price)}</p>
 
               {product.description && (
@@ -122,12 +124,15 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
           {/* Related */}
           {related.length > 0 && (
             <div className="mt-24">
-              <h2
-                className="text-2xl font-light tracking-wide mb-8"
-                style={{ fontFamily: "var(--font-cormorant)" }}
-              >
-                Vous aimerez aussi
-              </h2>
+              <div className="mb-8">
+                <h2
+                  className="text-2xl font-light tracking-wide"
+                  style={{ fontFamily: "var(--font-cormorant)" }}
+                >
+                  Vous aimerez aussi
+                </h2>
+                <OrnamentDivider className="mt-2 w-28 text-motif" />
+              </div>
               <ProductGrid products={related} />
             </div>
           )}
