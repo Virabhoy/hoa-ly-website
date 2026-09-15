@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import ProductGrid from "@/components/catalogue/ProductGrid";
 import { getAllProducts, getCategories } from "@/lib/supabase/queries";
 import Link from "next/link";
+import { CloudMotif, OrnamentDivider } from "@/components/ui/ChineseMotifs";
 
 export const metadata: Metadata = {
   title: "Catalogue",
@@ -21,14 +22,16 @@ export default async function CataloguePage() {
       <main className="pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="py-10 border-b border-[#E5E5E5] mb-10">
+          <div className="relative py-10 border-b border-[#E5E5E5] mb-10 overflow-hidden">
+            <CloudMotif className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 w-56 sm:w-72 text-motif opacity-20 hidden sm:block" />
             <h1
               className="text-4xl font-light tracking-wide"
               style={{ fontFamily: "var(--font-cormorant)" }}
             >
               Tout le catalogue
             </h1>
-            <p className="text-sm text-[#6B6B6B] mt-2">{products.length} articles</p>
+            <OrnamentDivider className="mt-3 w-32 text-motif" />
+            <p className="text-sm text-[#6B6B6B] mt-3">{products.length} articles</p>
           </div>
 
           {/* Category filters */}

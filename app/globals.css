@@ -9,6 +9,10 @@
   --white: #FFFFFF;
 }
 
+@theme {
+  --color-motif: #B8322A;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -41,4 +45,33 @@ body {
   display: flex;
   animation: ticker 25s linear infinite;
   white-space: nowrap;
+}
+
+/* Soulignement animé au survol : se trace depuis la gauche, se retire vers la droite */
+@layer components {
+  .link-underline {
+    position: relative;
+  }
+  .link-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .link-underline:hover::after,
+  .link-underline:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .link-underline::after {
+      transition: none;
+    }
+  }
 }

@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { MapPin, Phone, Clock, Train } from "lucide-react";
+import { OrnamentDivider } from "@/components/ui/ChineseMotifs";
 import { STORE_ADDRESS, STORE_HOURS, STORE_METRO, STORE_PHONE, STORE_LAT, STORE_LNG } from "@/lib/constants";
 
 const OpenStreetMap = dynamic(() => import("./OpenStreetMap"), {
@@ -22,12 +23,15 @@ export default function StoreCard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         {/* Info */}
         <div>
-          <h2
-            className="text-3xl font-light tracking-wide mb-8"
-            style={{ fontFamily: "var(--font-cormorant)" }}
-          >
-            Notre Boutique
-          </h2>
+          <div className="mb-8">
+            <h2
+              className="text-3xl font-light tracking-wide"
+              style={{ fontFamily: "var(--font-cormorant)" }}
+            >
+              Notre Boutique
+            </h2>
+            <OrnamentDivider className="mt-2 w-28 text-motif" />
+          </div>
 
           <div className="flex items-start gap-3 mb-6">
             <MapPin size={16} className="mt-0.5 shrink-0 text-[#C8A882]" />

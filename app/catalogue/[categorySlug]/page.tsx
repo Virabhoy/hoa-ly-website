@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import ProductGrid from "@/components/catalogue/ProductGrid";
 import { getCategoryBySlug, getCategories, getProductsByCategory } from "@/lib/supabase/queries";
 import Link from "next/link";
+import { LatticeCorner } from "@/components/ui/ChineseMotifs";
 
 interface Params {
   categorySlug: string;
@@ -66,6 +67,8 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
               </h1>
             </div>
           </div>
+          <LatticeCorner className="pointer-events-none absolute top-5 left-5 w-12 md:w-16 text-white/70" />
+          <LatticeCorner className="pointer-events-none absolute bottom-5 right-5 w-12 md:w-16 text-white/70 rotate-180" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

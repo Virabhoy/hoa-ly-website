@@ -1,5 +1,6 @@
 import { Star, ExternalLink, Quote } from "lucide-react";
 import type { GooglePlaceData, GoogleReview } from "@/lib/supabase/types";
+import { CloudMotif } from "@/components/ui/ChineseMotifs";
 
 // ─── Avis de démonstration ────────────────────────────────────────
 const DEMO_DATA: GooglePlaceData = {
@@ -135,8 +136,10 @@ export default function GoogleReviews({ data }: GoogleReviewsProps) {
   const display = data ?? DEMO_DATA;
 
   return (
-    <section className="bg-[#F0EDE8] py-20 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative bg-[#F0EDE8] py-20 overflow-hidden">
+      <CloudMotif className="pointer-events-none absolute -top-2 right-4 w-72 sm:w-96 text-motif opacity-20" />
+      <CloudMotif className="pointer-events-none absolute bottom-4 -left-10 w-64 sm:w-80 text-motif opacity-15 -scale-x-100" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-12 gap-6">

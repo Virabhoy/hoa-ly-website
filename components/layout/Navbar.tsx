@@ -29,22 +29,21 @@ export default function Navbar() {
     <header
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled ? "bg-[#FAFAF9]/95 backdrop-blur-sm border-b border-[#E5E5E5]" : "bg-transparent"
+        "bg-white border-b border-[#E5E5E5]",
+        scrolled && "shadow-sm"
       )}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          <div className="w-11 h-11 rounded-full overflow-hidden ring-1 ring-white/20 shadow-sm">
-            <Image
-              src="/images/Logo Hoaly.png"
-              alt="Hoa Ly Paris"
-              width={44}
-              height={44}
-              className="w-full h-full object-cover"
-              priority
-            />
-          </div>
+          <Image
+            src="/images/logo-hoaly.png"
+            alt="Hoa Ly Paris"
+            width={387}
+            height={369}
+            className="h-12 w-auto"
+            priority
+          />
         </Link>
 
         {/* Desktop nav */}
@@ -53,7 +52,7 @@ export default function Navbar() {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="text-xs tracking-widest uppercase text-[#0A0A0A] hover:text-[#C8A882] transition-colors duration-200"
+                className="link-underline text-xs tracking-widest uppercase text-[#0A0A0A] hover:text-[#C8A882] transition-colors duration-300"
               >
                 {link.label}
               </Link>
@@ -65,7 +64,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           <Link
             href="/catalogue"
-            className="hidden lg:block text-xs tracking-widest uppercase hover:text-[#C8A882] transition-colors duration-200"
+            className="link-underline hidden lg:block text-xs tracking-widest uppercase hover:text-[#C8A882] transition-colors duration-300"
           >
             Catalogue
           </Link>
