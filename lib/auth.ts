@@ -1,60 +1,36 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { getStore } from "@/lib/store";
+import { SESSION_COOKIE_NAME, verifySessionToken, type Session } from "@/lib/session";
 
-const SESSION_COOKIE = "hoaly_session";
-const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000;
+/*
+ * Vérification complète de la session, faite au plus près des données (pages admin et routes API).
+ * Le proxy ne fait qu'un contrôle rapide du cookie : la doc Next 16 déconseille d'en faire la seule protection.
+ */
 
-function hexFromArrayBuffer(buf: ArrayBuffer): string {
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+/** Toute session ouverte avant cette date est refusée (mise à jour à chaque déconnexion). */
+async function getRevokedBefore(): Promise<number> {
+  const auth = (await getStore().getSettings()).auth as { revoked_before?: unknown } | undefined;
+  return typeof auth?.revoked_before === "number" ? auth.revoked_before : 0;
 }
 
-async function getKey(): Promise<CryptoKey> {
-  const secret = process.env.SESSION_SECRET ?? "default-dev-secret-change-in-production";
-  const enc = new TextEncoder();
-  return crypto.subtle.importKey(
-    "raw",
-    enc.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"]
-  );
+export const getSession = cache(async (): Promise<Session | null> => {
+  const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
+  const session = await verifySessionToken(token);
+  if (!session) return null;
+  if (session.issuedAt <= (await getRevokedBefore())) return null;
+  return session;
+});
+
+/** À appeler en tête de chaque page admin : renvoie vers la connexion si la session n'est pas valide. */
+export async function requireAdmin(): Promise<Session> {
+  const session = await getSession();
+  if (!session) redirect("/admin/login");
+  return session;
 }
 
-async function sign(payload: string): Promise<string> {
-  const key = await getKey();
-  const enc = new TextEncoder();
-  const sigBuf = await crypto.subtle.sign("HMAC", key, enc.encode(payload));
-  return hexFromArrayBuffer(sigBuf);
+/** Invalide toutes les sessions ouvertes, sur tous les appareils. */
+export async function revokeAllSessions(): Promise<void> {
+  await getStore().setSetting("auth", { revoked_before: Date.now() });
 }
-
-export async function createSession(): Promise<string> {
-  const expires = Date.now() + SESSION_DURATION;
-  const payload = `admin:${expires}`;
-  const sig = await sign(payload);
-  return `${payload}.${sig}`;
-}
-
-export async function verifySession(token: string): Promise<boolean> {
-  const dotIndex = token.lastIndexOf(".");
-  if (dotIndex === -1) return false;
-  const payload = token.slice(0, dotIndex);
-  const sig = token.slice(dotIndex + 1);
-  try {
-    const expected = await sign(payload);
-    if (expected !== sig) return false;
-    const expires = parseInt(payload.split(":")[1], 10);
-    return Date.now() < expires;
-  } catch {
-    return false;
-  }
-}
-
-export async function getSession(): Promise<boolean> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
-  if (!token) return false;
-  return verifySession(token);
-}
-
-export const SESSION_COOKIE_NAME = SESSION_COOKIE;

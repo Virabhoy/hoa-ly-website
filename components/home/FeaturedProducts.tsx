@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { Product } from "@/lib/supabase/types";
+import type { Product } from "@/lib/catalog/types";
 import { formatPrice } from "@/lib/utils";
-import { OrnamentDivider } from "@/components/ui/ChineseMotifs";
+import { CloudMotif, OrnamentDivider } from "@/components/ui/ChineseMotifs";
 
 interface FeaturedProductsProps {
   products: Product[];
@@ -12,8 +12,9 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
   if (!products.length) return null;
 
   return (
-    <section className="py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative py-16 overflow-hidden">
+      <CloudMotif className="pointer-events-none absolute top-6 -left-12 w-64 sm:w-80 text-motif opacity-15 -scale-x-100 hidden sm:block" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-10">
           <div>
             <h2
@@ -48,6 +49,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
                     src={product.cover_image}
                     alt={product.name}
                     fill
+                    sizes="256px"
                     className="object-cover object-center group-hover:scale-[1.04] transition-transform duration-500"
                   />
                 ) : (
@@ -58,7 +60,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
                 <p className="text-xs tracking-widest uppercase text-[#6B6B6B]">
                   {(product as { category?: { name: string } }).category?.name ?? ""}
                 </p>
-                <p className="text-sm mt-0.5 group-hover:text-[#C8A882] transition-colors">
+                <p className="text-sm mt-0.5 group-hover:text-motif transition-colors">
                   {product.name}
                 </p>
                 <p className="text-sm text-[#6B6B6B] mt-0.5">{formatPrice(product.price)}</p>

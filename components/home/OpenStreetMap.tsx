@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+// Styles et icônes servis par le site lui-même (et non par un CDN tiers), ce qui permet une CSP stricte.
+// Les icônes sont copiées depuis node_modules/leaflet/dist/images vers public/leaflet.
+import "leaflet/dist/leaflet.css";
 
 interface OpenStreetMapProps {
   lat: number;
@@ -23,9 +26,9 @@ export default function OpenStreetMap({ lat, lng, zoom = 16, label = "Hoa Ly" }:
       // @ts-expect-error - Leaflet private property
       delete L.Icon.Default.prototype._getIconUrl;
       L.Icon.Default.mergeOptions({
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        iconUrl: "/leaflet/marker-icon.png",
+        iconRetinaUrl: "/leaflet/marker-icon-2x.png",
+        shadowUrl: "/leaflet/marker-shadow.png",
       });
 
       const map = L.map(mapRef.current!, {
@@ -55,17 +58,10 @@ export default function OpenStreetMap({ lat, lng, zoom = 16, label = "Hoa Ly" }:
   }, [lat, lng, zoom, label]);
 
   return (
-    <>
-      <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        crossOrigin=""
-      />
-      <div
-        ref={mapRef}
-        className="w-full h-full min-h-72"
-        style={{ zIndex: 0 }}
-      />
-    </>
+    <div
+      ref={mapRef}
+      className="w-full h-full min-h-72"
+      style={{ zIndex: 0 }}
+    />
   );
 }

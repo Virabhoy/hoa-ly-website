@@ -1,36 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/server";
-import { slugify } from "@/lib/utils";
+import { adminRoute, readJson } from "@/lib/admin-api";
+import { getStore } from "@/lib/store";
+import { parseCategory } from "@/lib/store/validate";
 
 export async function GET() {
-  const auth = await getSession();
-  if (!auth) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-
-  const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("categories")
-    .select("*")
-    .order("display_order", { ascending: true });
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  return adminRoute(async () =>
+    (await getStore().listCategories()).sort((a, b) => a.display_order - b.display_order)
+  );
 }
 
-export async function POST(req: NextRequest) {
-  const auth = await getSession();
-  if (!auth) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-
-  const body = await req.json();
-  const supabase = createAdminClient();
-  const slug = body.slug ?? slugify(body.name);
-
-  const { data, error } = await supabase
-    .from("categories")
-    .insert({ ...body, slug })
-    .select()
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data, { status: 201 });
+export async function POST(req: Request) {
+  return adminRoute(async () => getStore().createCategory(parseCategory(await readJson(req))), {
+    status: 201,
+    refresh: true,
+  });
 }

@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hoa Ly - site vitrine
 
-## Getting Started
+Site vitrine de la boutique de prêt-à-porter **Hoa Ly**, 50 avenue de Choisy, Paris 13e : catalogue, collections saisonnières, fiches produit avec couleurs, tailles et stock, et administration pour gérer le tout. Aucune vente en ligne : les clientes réservent par téléphone et achètent en boutique.
 
-First, run the development server:
+## Technique
+
+- Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4.
+- Données derrière une interface unique (`lib/store`) :
+  - **fichiers** (`catalogue.json` et `uploads/`) : par défaut, en local comme sur le VPS ;
+  - **PostgreSQL** : utilisé automatiquement si `DATABASE_URL` est renseignée (base sur le VPS, IONOS Cloud ou Supabase). Schéma dans `db/schema.sql`, création et import du catalogue avec `npm run db:setup`. Voir [deploy/GUIDE-BDD.md](deploy/GUIDE-BDD.md).
+- Administration protégée sous `/admin` : session signée, limite de tentatives, contrôle côté serveur sur chaque page.
+
+## Développement
+
+```bash
+npm install
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Le site est alors sur http://localhost:3000. La configuration locale va dans `.env.local` (modèle : `.env.local.example`). Au premier lancement, le catalogue de démonstration est copié dans `data/`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Mise en ligne sur IONOS
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Tout est décrit dans [deploy/GUIDE-IONOS.md](deploy/GUIDE-IONOS.md). En résumé :
 
-## Learn More
+```bash
+npm run export:ionos
+```
 
-To learn more about Next.js, take a look at the following resources:
+puis, sur le serveur, `sudo bash deploy/install.sh mondomaine.fr adresse@email.fr`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Organisation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Dossier | Contenu |
+|---------|---------|
+| `app/` | Pages publiques, admin (`app/admin`), routes API, pages légales |
+| `components/` | Composants d'interface |
+| `lib/store/` | Accès aux données (fichiers ou PostgreSQL), validation, traitement et recadrage des photos |
+| `lib/catalog/` | Types du catalogue et lectures du site public |
+| `db/`, `scripts/db-setup.mjs` | Schéma PostgreSQL et import du catalogue |
+| `lib/session.ts`, `lib/auth.ts`, `proxy.ts` | Connexion et protection de l'admin |
+| `deploy/` | Scripts et configuration pour le VPS IONOS |

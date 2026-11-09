@@ -1,5 +1,12 @@
 export const STORE_NAME = "Hoa Ly";
 export const STORE_ADDRESS = "50 Avenue de Choisy, 75013 Paris";
+// Adresse détaillée, pour les données structurées (Google, Maps).
+export const STORE_ADDRESS_PARTS = {
+  street: "50 Avenue de Choisy",
+  postalCode: "75013",
+  city: "Paris",
+  country: "FR",
+};
 export const STORE_PHONE = "01 53 79 25 44";
 export const STORE_EMAIL = "contact@hoaly.paris";
 export const STORE_INSTAGRAM = "hoaly_paris";

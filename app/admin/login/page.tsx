@@ -39,47 +39,51 @@ export default function AdminLoginPage() {
           >
             Hoa Ly
           </p>
-          <p className="text-xs tracking-widest uppercase text-[#6B6B6B] mt-2">
+          <p className="text-xs tracking-widest uppercase text-[#9A9A9A] mt-2">
             Administration
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs tracking-widest uppercase text-[#6B6B6B] mb-2">
+            <label htmlFor="username" className="block text-xs tracking-widest uppercase text-[#9A9A9A] mb-2">
               Identifiant
             </label>
             <input
+              id="username"
+              name="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
               autoComplete="username"
-              className="w-full bg-[#1A1A1A] text-white border border-[#333] px-4 py-3 text-sm focus:outline-none focus:border-[#C8A882] transition-colors"
+              className="w-full bg-[#1A1A1A] text-white border border-[#333] px-4 py-3 text-base sm:text-sm focus:outline-none focus:border-motif transition-colors"
             />
           </div>
           <div>
-            <label className="block text-xs tracking-widest uppercase text-[#6B6B6B] mb-2">
+            <label htmlFor="password" className="block text-xs tracking-widest uppercase text-[#9A9A9A] mb-2">
               Mot de passe
             </label>
             <input
+              id="password"
+              name="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
-              className="w-full bg-[#1A1A1A] text-white border border-[#333] px-4 py-3 text-sm focus:outline-none focus:border-[#C8A882] transition-colors"
+              className="w-full bg-[#1A1A1A] text-white border border-[#333] px-4 py-3 text-base sm:text-sm focus:outline-none focus:border-motif transition-colors"
             />
           </div>
 
           {error && (
-            <p className="text-red-400 text-xs text-center">{error}</p>
+            <p role="alert" className="text-red-400 text-xs text-center">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#C8A882] text-white text-xs tracking-widest uppercase hover:bg-[#b8987a] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+            className="w-full py-3 bg-motif text-white text-xs tracking-widest uppercase hover:bg-[#A00202] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
           >
             {loading && <Spinner className="w-4 h-4 border-white/20 border-t-white" />}
             Se connecter

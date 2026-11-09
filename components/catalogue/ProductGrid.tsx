@@ -1,4 +1,4 @@
-import type { Product } from "@/lib/supabase/types";
+import type { Product } from "@/lib/catalog/types";
 import ProductCard from "./ProductCard";
 
 interface ProductGridProps {

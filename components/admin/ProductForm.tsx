@@ -1,351 +1,424 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Upload, X } from "lucide-react";
-import Image from "next/image";
+import { ExternalLink, Plus, Trash2 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Spinner from "@/components/ui/Spinner";
-import type { Category, Product, ProductVariant } from "@/lib/supabase/types";
+import ImageListEditor from "@/components/admin/ImageListEditor";
+import { api, errorMessage } from "@/lib/admin-client";
 import { SIZES } from "@/lib/constants";
+import { cn } from "@/lib/utils";
+import type { Category, Collection, Product } from "@/lib/catalog/types";
 
 interface ProductFormProps {
   product?: Product;
   categories: Category[];
+  collections: Collection[];
 }
 
-interface VariantDraft extends Partial<ProductVariant> {
-  _key: string;
+// Une couleur et le stock de chaque taille proposée dans cette couleur.
+interface SizeCell {
+  id?: string;
+  on: boolean;
+  stock: number;
 }
 
-function generateKey() {
-  return Math.random().toString(36).slice(2);
+interface ColorGroup {
+  key: string;
+  name: string;
+  hex: string;
+  cells: Record<string, SizeCell>;
 }
 
-export default function ProductForm({ product, categories }: ProductFormProps) {
+const BASE_SIZES = [...SIZES, "TU"];
+
+const newKey = () => Math.random().toString(36).slice(2);
+
+function groupVariants(product?: Product): ColorGroup[] {
+  const groups: ColorGroup[] = [];
+  for (const v of product?.variants ?? []) {
+    let group = groups.find((g) => g.name === v.color_name && g.hex === v.color_hex);
+    if (!group) {
+      group = { key: newKey(), name: v.color_name, hex: v.color_hex, cells: {} };
+      groups.push(group);
+    }
+    group.cells[v.size] = { id: v.id, on: true, stock: v.stock };
+  }
+  return groups;
+}
+
+const label = "block text-xs tracking-widest uppercase text-[#6B6B6B] mb-2";
+const field =
+  "w-full border border-[#E5E5E5] px-4 py-2.5 text-sm bg-white focus:outline-none focus:border-[#0A0A0A]";
+
+export default function ProductForm({ product, categories, collections }: ProductFormProps) {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState(product?.name ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
-  const [price, setPrice] = useState(product?.price?.toString() ?? "");
+  const [price, setPrice] = useState(product ? String(product.price) : "");
   const [categoryId, setCategoryId] = useState(product?.category_id ?? "");
+  const [collectionId, setCollectionId] = useState(product?.collection_id ?? "");
   const [isFeatured, setIsFeatured] = useState(product?.is_featured ?? false);
   const [isActive, setIsActive] = useState(product?.is_active ?? true);
   const [images, setImages] = useState<string[]>(product?.images ?? []);
-  const [variants, setVariants] = useState<VariantDraft[]>(
-    product?.variants?.map((v) => ({ ...v, _key: generateKey() })) ?? []
-  );
+  const [groups, setGroups] = useState<ColorGroup[]>(() => groupVariants(product));
+  const [extraSizes, setExtraSizes] = useState<string[]>([]);
+  const [newSize, setNewSize] = useState("");
 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
-  async function uploadImage(file: File): Promise<string | null> {
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.url;
+  // Tailles affichées : tailles standard, tailles déjà utilisées par le produit, tailles ajoutées.
+  const sizes = useMemo(() => {
+    const used = groups.flatMap((g) => Object.keys(g.cells));
+    return Array.from(new Set([...BASE_SIZES, ...used, ...extraSizes]));
+  }, [groups, extraSizes]);
+
+  function updateGroup(key: string, patch: Partial<ColorGroup>) {
+    setGroups((prev) => prev.map((g) => (g.key === key ? { ...g, ...patch } : g)));
   }
 
-  async function handleFiles(files: FileList) {
-    setUploading(true);
-    const urls: string[] = [];
-    for (const file of Array.from(files)) {
-      const url = await uploadImage(file);
-      if (url) urls.push(url);
-    }
-    setImages((prev) => [...prev, ...urls]);
-    setUploading(false);
-  }
-
-  function addVariant() {
-    setVariants((prev) => [
-      ...prev,
-      { _key: generateKey(), color_name: "", color_hex: "#000000", size: "M", stock: 0 },
-    ]);
-  }
-
-  function updateVariant(key: string, field: string, value: string | number) {
-    setVariants((prev) =>
-      prev.map((v) => (v._key === key ? { ...v, [field]: value } : v))
+  function updateCell(key: string, size: string, patch: Partial<SizeCell>) {
+    setGroups((prev) =>
+      prev.map((g) => {
+        if (g.key !== key) return g;
+        const cell = g.cells[size] ?? { on: false, stock: 0 };
+        return { ...g, cells: { ...g.cells, [size]: { ...cell, ...patch } } };
+      })
     );
   }
 
-  function removeVariant(key: string) {
-    setVariants((prev) => prev.filter((v) => v._key !== key));
+  function addColor() {
+    const cells: Record<string, SizeCell> = {};
+    for (const s of SIZES) cells[s] = { on: true, stock: 0 };
+    setGroups((prev) => [...prev, { key: newKey(), name: "", hex: "#0A0A0A", cells }]);
   }
 
-  async function handleSave() {
-    setSaving(true);
+  function addSize() {
+    const size = newSize.trim().toUpperCase();
+    if (size && !sizes.includes(size)) setExtraSizes((prev) => [...prev, size]);
+    setNewSize("");
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
     setError("");
+
+    const priceValue = Number(price.replace(",", "."));
+    if (!name.trim()) return setError("Indiquez le nom du produit.");
+    if (!price || !Number.isFinite(priceValue) || priceValue < 0) return setError("Indiquez un prix valide.");
+    if (groups.some((g) => !g.name.trim())) return setError("Donnez un nom à chaque couleur.");
+
+    const variants = groups.flatMap((g) =>
+      sizes
+        .filter((s) => g.cells[s]?.on)
+        .map((s) => ({
+          ...(g.cells[s].id ? { id: g.cells[s].id } : {}),
+          color_name: g.name.trim(),
+          color_hex: g.hex,
+          size: s,
+          stock: Math.max(0, Math.round(g.cells[s].stock || 0)),
+        }))
+    );
+
+    const payload = {
+      name,
+      description,
+      price: priceValue,
+      category_id: categoryId || null,
+      collection_id: collectionId || null,
+      is_featured: isFeatured,
+      is_active: isActive,
+      images,
+      variants,
+    };
+
+    setSaving(true);
     try {
-      const payload = {
-        name,
-        description: description || null,
-        price: parseFloat(price),
-        category_id: categoryId || null,
-        is_featured: isFeatured,
-        is_active: isActive,
-        images,
-        cover_image: images[0] ?? null,
-      };
-
-      let productId = product?.id;
-
-      if (product) {
-        await fetch(`/api/admin/products/${product.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      } else {
-        const res = await fetch("/api/admin/products", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        productId = data.id;
-      }
-
-      // Sync variants
-      for (const v of variants) {
-        if (v.id) {
-          await fetch(`/api/admin/variants/${v.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              color_name: v.color_name,
-              color_hex: v.color_hex,
-              size: v.size,
-              stock: v.stock ?? 0,
-            }),
-          });
-        } else {
-          await fetch("/api/admin/variants", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              product_id: productId,
-              color_name: v.color_name,
-              color_hex: v.color_hex,
-              size: v.size,
-              stock: v.stock ?? 0,
-            }),
-          });
-        }
-      }
-
+      if (product) await api(`/api/admin/products/${product.id}`, "PUT", payload);
+      else await api("/api/admin/products", "POST", payload);
       router.push("/admin/produits");
       router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Erreur lors de la sauvegarde");
-    } finally {
+    } catch (err) {
+      setError(errorMessage(err));
       setSaving(false);
     }
   }
 
+  async function handleDelete() {
+    if (!product || !confirm(`Supprimer « ${product.name} » définitivement ?`)) return;
+    setDeleting(true);
+    try {
+      await api(`/api/admin/products/${product.id}`, "DELETE");
+      router.push("/admin/produits");
+      router.refresh();
+    } catch (err) {
+      setError(errorMessage(err));
+      setDeleting(false);
+    }
+  }
+
   return (
-    <div className="space-y-8">
-      {/* Basic info */}
-      <div className="bg-white border border-[#E5E5E5] p-6">
-        <h2 className="text-xs tracking-widest uppercase font-medium mb-5 text-[#6B6B6B]">
-          Informations
-        </h2>
+    <form onSubmit={handleSave} className="space-y-6">
+      {/* Informations */}
+      <section className="bg-white border border-[#E5E5E5] p-5 sm:p-6">
+        <h2 className="text-xs tracking-widest uppercase font-medium mb-5 text-[#6B6B6B]">Informations</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="md:col-span-2">
-            <label className="block text-xs tracking-widest uppercase text-[#6B6B6B] mb-2">Nom *</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border border-[#E5E5E5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#0A0A0A]"
-              required
-            />
+            <label htmlFor="name" className={label}>Nom *</label>
+            <input id="name" value={name} onChange={(e) => setName(e.target.value)} className={field} required />
           </div>
           <div>
-            <label className="block text-xs tracking-widest uppercase text-[#6B6B6B] mb-2">Prix (€) *</label>
+            <label htmlFor="price" className={label}>Prix (€) *</label>
             <input
-              type="number"
-              step="0.01"
-              min="0"
+              id="price"
+              inputMode="decimal"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
-              className="w-full border border-[#E5E5E5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#0A0A0A]"
+              placeholder="79,90"
+              className={field}
               required
             />
           </div>
           <div>
-            <label className="block text-xs tracking-widest uppercase text-[#6B6B6B] mb-2">Catégorie</label>
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full border border-[#E5E5E5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#0A0A0A] bg-white"
-            >
-              <option value="">— Aucune —</option>
+            <label htmlFor="category" className={label}>Catégorie</label>
+            <select id="category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={field}>
+              <option value="">Aucune</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-xs tracking-widest uppercase text-[#6B6B6B] mb-2">Description</label>
+            <label htmlFor="collection" className={label}>Collection</label>
+            <select id="collection" value={collectionId} onChange={(e) => setCollectionId(e.target.value)} className={field}>
+              <option value="">Aucune</option>
+              {collections.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}{c.is_archived ? " (archivée)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="md:col-span-2">
+            <label htmlFor="description" className={label}>Description</label>
             <textarea
+              id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full border border-[#E5E5E5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#0A0A0A] resize-none"
+              rows={4}
+              className={cn(field, "resize-y")}
             />
           </div>
-          <div className="flex gap-6">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isFeatured}
-                onChange={(e) => setIsFeatured(e.target.checked)}
-                className="w-4 h-4"
-              />
-              Coup de cœur
-            </label>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4"
-              />
-              Actif
-            </label>
-          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Images */}
-      <div className="bg-white border border-[#E5E5E5] p-6">
-        <h2 className="text-xs tracking-widest uppercase font-medium mb-5 text-[#6B6B6B]">
-          Photos
-        </h2>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 mb-4">
-          {images.map((url, i) => (
-            <div key={url} className="relative aspect-[3/4] bg-[#F0EDE8]">
-              <Image src={url} alt={`Image ${i + 1}`} fill className="object-cover" />
-              {i === 0 && (
-                <span className="absolute top-1 left-1 bg-[#C8A882] text-white text-[9px] px-1">
-                  Principal
-                </span>
-              )}
-              <button
-                onClick={() => setImages((prev) => prev.filter((_, idx) => idx !== i))}
-                className="absolute top-1 right-1 bg-black/60 text-white p-0.5 hover:bg-red-600"
-              >
-                <X size={10} />
-              </button>
-            </div>
-          ))}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="aspect-[3/4] border-2 border-dashed border-[#E5E5E5] hover:border-[#C8A882] flex items-center justify-center text-[#6B6B6B] hover:text-[#C8A882] transition-colors"
-          >
-            {uploading ? <Spinner /> : <Upload size={20} />}
-          </button>
+      {/* Visibilité */}
+      <section className="bg-white border border-[#E5E5E5] p-5 sm:p-6">
+        <h2 className="text-xs tracking-widest uppercase font-medium mb-5 text-[#6B6B6B]">Mise en vente</h2>
+        <div className="space-y-4">
+          <Toggle
+            checked={isActive}
+            onChange={setIsActive}
+            title="Visible sur le site"
+            text="Décochez pour retirer l'article du site sans le supprimer."
+          />
+          <Toggle
+            checked={isFeatured}
+            onChange={setIsFeatured}
+            title="Coup de cœur"
+            text="L'article apparaît dans la sélection « Coups de cœur » de l'accueil."
+          />
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(e) => e.target.files && handleFiles(e.target.files)}
+      </section>
+
+      {/* Photos */}
+      <section className="bg-white border border-[#E5E5E5] p-5 sm:p-6">
+        <h2 className="text-xs tracking-widest uppercase font-medium mb-5 text-[#6B6B6B]">Photos</h2>
+        <ImageListEditor
+          images={images}
+          onChange={setImages}
+          onUploadingChange={setUploading}
+          hint="La photo principale s'affiche dans le catalogue. Utilisez les flèches pour changer l'ordre."
         />
-        <p className="text-xs text-[#6B6B6B]">
-          La première image sera utilisée comme photo principale. Formats acceptés : JPG, PNG, WEBP.
-        </p>
-      </div>
+      </section>
 
-      {/* Variants */}
-      <div className="bg-white border border-[#E5E5E5] p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xs tracking-widest uppercase font-medium text-[#6B6B6B]">
-            Variantes (couleur × taille)
-          </h2>
-          <Button variant="secondary" size="sm" onClick={addVariant}>
-            <Plus size={12} className="mr-1" /> Ajouter
+      {/* Couleurs et tailles */}
+      <section className="bg-white border border-[#E5E5E5] p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+          <h2 className="text-xs tracking-widest uppercase font-medium text-[#6B6B6B]">Couleurs, tailles et stock</h2>
+          <Button type="button" variant="secondary" size="sm" onClick={addColor}>
+            <Plus size={12} className="mr-1" /> Ajouter une couleur
           </Button>
         </div>
+        <p className="text-xs text-[#6B6B6B] mb-5">
+          Cliquez sur une taille pour la proposer ou la retirer, puis indiquez le stock disponible en boutique.
+        </p>
 
-        {variants.length === 0 && (
-          <p className="text-sm text-[#6B6B6B] text-center py-6">
-            Aucune variante — cliquez sur Ajouter pour commencer.
+        {groups.length === 0 && (
+          <p className="text-sm text-[#6B6B6B] text-center py-6 border border-dashed border-[#E5E5E5]">
+            Aucune couleur pour l&apos;instant.
           </p>
         )}
 
-        <div className="space-y-3">
-          {variants.map((v) => (
-            <div key={v._key} className="grid grid-cols-12 gap-3 items-center">
-              <div className="col-span-1">
+        <div className="space-y-4">
+          {groups.map((g) => (
+            <div key={g.key} className="border border-[#EFEAE6] p-4">
+              <div className="flex items-center gap-3 mb-4">
                 <input
                   type="color"
-                  value={v.color_hex ?? "#000000"}
-                  onChange={(e) => updateVariant(v._key, "color_hex", e.target.value)}
-                  className="w-8 h-8 border border-[#E5E5E5] cursor-pointer"
-                  title="Couleur"
+                  value={g.hex}
+                  onChange={(e) => updateGroup(g.key, { hex: e.target.value })}
+                  className="w-9 h-9 border border-[#E5E5E5] cursor-pointer shrink-0"
+                  title="Teinte"
+                  aria-label="Teinte"
                 />
-              </div>
-              <div className="col-span-4">
                 <input
-                  placeholder="Nom couleur"
-                  value={v.color_name ?? ""}
-                  onChange={(e) => updateVariant(v._key, "color_name", e.target.value)}
-                  className="w-full border border-[#E5E5E5] px-3 py-2 text-sm focus:outline-none"
+                  value={g.name}
+                  onChange={(e) => updateGroup(g.key, { name: e.target.value })}
+                  placeholder="Nom de la couleur (ex. Rouge)"
+                  className="flex-1 min-w-0 border border-[#E5E5E5] px-3 py-2 text-sm focus:outline-none focus:border-[#0A0A0A]"
+                  aria-label="Nom de la couleur"
                 />
-              </div>
-              <div className="col-span-3">
-                <select
-                  value={v.size ?? "M"}
-                  onChange={(e) => updateVariant(v._key, "size", e.target.value)}
-                  className="w-full border border-[#E5E5E5] px-3 py-2 text-sm focus:outline-none bg-white"
-                >
-                  {SIZES.map((s) => <option key={s}>{s}</option>)}
-                </select>
-              </div>
-              <div className="col-span-3">
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="Stock"
-                  value={v.stock ?? 0}
-                  onChange={(e) => updateVariant(v._key, "stock", parseInt(e.target.value) || 0)}
-                  className="w-full border border-[#E5E5E5] px-3 py-2 text-sm focus:outline-none"
-                />
-              </div>
-              <div className="col-span-1 flex justify-end">
                 <button
-                  onClick={() => removeVariant(v._key)}
-                  className="text-[#6B6B6B] hover:text-red-600 transition-colors"
+                  type="button"
+                  onClick={() => setGroups((prev) => prev.filter((x) => x.key !== g.key))}
+                  className="p-2 text-[#6B6B6B] hover:text-red-600 transition-colors"
+                  aria-label="Supprimer cette couleur"
+                  title="Supprimer cette couleur"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={15} />
                 </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {sizes.map((s) => {
+                  const cell = g.cells[s];
+                  const on = !!cell?.on;
+                  return (
+                    <div key={s} className={cn("w-[4.5rem] border", on ? "border-[#0A0A0A]" : "border-[#E5E5E5]")}>
+                      <button
+                        type="button"
+                        onClick={() => updateCell(g.key, s, { on: !on })}
+                        className={cn(
+                          "w-full py-1.5 text-xs tracking-wider transition-colors",
+                          on ? "bg-[#0A0A0A] text-white" : "text-[#767676] hover:text-[#0A0A0A]"
+                        )}
+                        aria-pressed={on}
+                      >
+                        {s}
+                      </button>
+                      <input
+                        type="number"
+                        min={0}
+                        inputMode="numeric"
+                        disabled={!on}
+                        value={on ? cell.stock : ""}
+                        onChange={(e) => updateCell(g.key, s, { stock: parseInt(e.target.value, 10) || 0 })}
+                        className={cn(
+                          "w-full px-2 py-1.5 text-sm text-center focus:outline-none disabled:bg-[#FAFAF9]",
+                          on && cell.stock === 0 && "text-red-600"
+                        )}
+                        aria-label={`Stock ${g.name || "couleur"} taille ${s}`}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}
         </div>
-      </div>
 
-      {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+        {groups.length > 0 && (
+          <div className="mt-4 flex items-center gap-2">
+            <input
+              value={newSize}
+              onChange={(e) => setNewSize(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addSize();
+                }
+              }}
+              placeholder="Autre taille (ex. 38)"
+              className="w-44 border border-[#E5E5E5] px-3 py-2 text-sm focus:outline-none focus:border-[#0A0A0A]"
+              aria-label="Autre taille"
+            />
+            <Button type="button" variant="ghost" size="sm" onClick={addSize}>
+              Ajouter la taille
+            </Button>
+          </div>
+        )}
+      </section>
 
-      <div className="flex gap-3 justify-end">
-        <Button variant="ghost" onClick={() => router.push("/admin/produits")}>
-          Annuler
-        </Button>
-        <Button onClick={handleSave} disabled={saving}>
-          {saving && <Spinner className="w-3 h-3 mr-2 border-white/20 border-t-white" />}
-          {product ? "Enregistrer les modifications" : "Créer le produit"}
-        </Button>
+      {error && (
+        <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 px-4 py-3">
+          {error}
+        </p>
+      )}
+
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center gap-3 pb-10">
+        {product && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting || saving}
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 text-xs tracking-widest uppercase text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+          >
+            {deleting ? <Spinner className="w-3 h-3" /> : <Trash2 size={13} />}
+            Supprimer
+          </button>
+        )}
+        {product?.is_active && (
+          <Link
+            href={`/produit/${product.slug}`}
+            target="_blank"
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 text-xs tracking-widest uppercase text-[#6B6B6B] hover:text-[#0A0A0A]"
+          >
+            <ExternalLink size={13} /> Voir sur le site
+          </Link>
+        )}
+        <div className="flex gap-3 sm:ml-auto">
+          <Button type="button" variant="ghost" onClick={() => router.push("/admin/produits")} className="flex-1 sm:flex-none">
+            Annuler
+          </Button>
+          <Button type="submit" disabled={saving || uploading} className="flex-1 sm:flex-none">
+            {saving && <Spinner className="w-3 h-3 mr-2 border-white/20 border-t-white" />}
+            {product ? "Enregistrer" : "Créer le produit"}
+          </Button>
+        </div>
       </div>
-    </div>
+    </form>
+  );
+}
+
+function Toggle({
+  checked,
+  onChange,
+  title,
+  text,
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  title: string;
+  text: string;
+}) {
+  return (
+    <label className="flex items-start gap-3 cursor-pointer">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 w-4 h-4 accent-[#C30202]"
+      />
+      <span>
+        <span className="block text-sm font-medium">{title}</span>
+        <span className="block text-xs text-[#6B6B6B] mt-0.5">{text}</span>
+      </span>
+    </label>
   );
 }

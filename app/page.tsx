@@ -7,39 +7,33 @@ import CategoryGrid from "@/components/home/CategoryGrid";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import GoogleReviews from "@/components/home/GoogleReviews";
 import StoreCard from "@/components/home/StoreCard";
-import { getCategories, getCollections, getFeaturedProducts } from "@/lib/supabase/queries";
-import type { GooglePlaceData } from "@/lib/supabase/types";
+import { getCategories, getCollections, getFeaturedProducts, getStoreHours } from "@/lib/catalog/queries";
+import { getGoogleReviews } from "@/lib/google-reviews";
+import JsonLd from "@/components/seo/JsonLd";
+import { pageMetadata } from "@/lib/site";
+import { storeJsonLd } from "@/lib/structured-data";
 
-async function getGoogleReviews(): Promise<GooglePlaceData | null> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/public/google-reviews`, {
-      next: { revalidate: 86400 },
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
+export const metadata = pageMetadata({ path: "/" });
 
 export default async function HomePage() {
-  const [collections, categories, featured, reviews] = await Promise.all([
+  const [collections, categories, featured, reviews, hours] = await Promise.all([
     getCollections(),
     getCategories(),
     getFeaturedProducts(8),
     getGoogleReviews(),
+    getStoreHours(),
   ]);
 
   return (
     <>
+      <JsonLd data={storeJsonLd(hours)} />
       <Navbar />
-      <main className="pt-16">
+      <main id="contenu">
         <CollectionsHero collections={collections} />
         <CategoryGrid categories={categories} />
         <FeaturedProducts products={featured} />
         <GoogleReviews data={reviews} />
-        <StoreCard />
+        <StoreCard hours={hours} />
       </main>
       <Footer />
     </>

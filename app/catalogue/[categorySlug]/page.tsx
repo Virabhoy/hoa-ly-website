@@ -4,9 +4,10 @@ import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductGrid from "@/components/catalogue/ProductGrid";
-import { getCategoryBySlug, getCategories, getProductsByCategory } from "@/lib/supabase/queries";
+import { getCategoryBySlug, getCategories, getProductsByCategory } from "@/lib/catalog/queries";
 import Link from "next/link";
 import { LatticeCorner } from "@/components/ui/ChineseMotifs";
+import { pageMetadata } from "@/lib/site";
 
 interface Params {
   categorySlug: string;
@@ -15,11 +16,13 @@ interface Params {
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { categorySlug } = await params;
   const category = await getCategoryBySlug(categorySlug);
-  if (!category) return { title: "Collection introuvable" };
-  return {
+  if (!category) return { title: "Catégorie introuvable" };
+  return pageMetadata({
     title: category.name,
-    description: category.description ?? `Découvrez notre collection ${category.name}.`,
-  };
+    description: category.description ?? `${category.name} : les pièces de la boutique Hoa Ly à Paris 13e.`,
+    path: `/catalogue/${category.slug}`,
+    image: category.cover_image,
+  });
 }
 
 export async function generateStaticParams() {
@@ -44,7 +47,7 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
   return (
     <>
       <Navbar />
-      <main className="pt-16">
+      <main id="contenu">
         {/* Hero banner */}
         <div className="relative h-64 md:h-80 bg-[#F0EDE8] overflow-hidden">
           {category.cover_image && (
@@ -52,8 +55,9 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
               src={category.cover_image}
               alt={category.name}
               fill
+              sizes="100vw"
               className="object-cover object-center"
-              priority
+              preload
             />
           )}
           <div className="absolute inset-0 bg-black/30 flex items-end">
@@ -73,10 +77,10 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {/* Category nav */}
-          <div className="flex gap-3 flex-wrap mb-10">
+          <div className="flex gap-3 flex-wrap justify-center mb-10">
             <Link
               href="/catalogue"
-              className="px-4 py-2 text-xs tracking-widest uppercase border border-[#E5E5E5] hover:border-[#0A0A0A] transition-colors"
+              className="px-6 py-2.5 rounded-full text-[11px] tracking-[0.2em] uppercase border border-[#E5E5E5] hover:border-motif hover:text-motif transition-colors duration-300"
             >
               Tout
             </Link>
@@ -84,10 +88,10 @@ export default async function CategoryPage({ params }: { params: Promise<Params>
               <Link
                 key={cat.id}
                 href={`/catalogue/${cat.slug}`}
-                className={`px-4 py-2 text-xs tracking-widest uppercase border transition-colors ${
+                className={`px-6 py-2.5 rounded-full text-[11px] tracking-[0.2em] uppercase border transition-colors duration-300 ${
                   cat.slug === categorySlug
-                    ? "bg-[#0A0A0A] text-white border-[#0A0A0A]"
-                    : "border-[#E5E5E5] hover:border-[#0A0A0A]"
+                    ? "bg-motif text-white border-motif"
+                    : "border-[#E5E5E5] hover:border-motif hover:text-motif"
                 }`}
               >
                 {cat.name}

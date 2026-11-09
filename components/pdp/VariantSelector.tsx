@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Phone } from "lucide-react";
-import type { ProductVariant } from "@/lib/supabase/types";
+import type { ProductVariant } from "@/lib/catalog/types";
 import { STORE_PHONE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -54,7 +54,7 @@ export default function VariantSelector({ variants }: VariantSelectorProps) {
     if (!selectedVariant) return null;
     if (selectedVariant.stock === 0) return { label: "Épuisé", class: "text-red-600" };
     if (selectedVariant.stock <= 3)
-      return { label: `Dernières pièces (${selectedVariant.stock} restantes)`, class: "text-[#C8A882]" };
+      return { label: `Dernières pièces (${selectedVariant.stock} restantes)`, class: "text-amber-800" };
     return { label: "En stock", class: "text-green-700" };
   }, [selectedVariant]);
 
@@ -70,7 +70,10 @@ export default function VariantSelector({ variants }: VariantSelectorProps) {
             {colors.map((v) => (
               <button
                 key={v.color_name}
+                type="button"
                 title={v.color_name}
+                aria-label={`Couleur ${v.color_name}`}
+                aria-pressed={selectedColor === v.color_name}
                 onClick={() => { setSelectedColor(v.color_name); setSelectedSize(null); }}
                 className={cn(
                   "w-7 h-7 rounded-full border-2 transition-all duration-150",
@@ -96,12 +99,15 @@ export default function VariantSelector({ variants }: VariantSelectorProps) {
               return (
                 <button
                   key={size}
+                  type="button"
                   onClick={() => isAvailable && setSelectedSize(size)}
                   disabled={!isAvailable}
+                  aria-pressed={selectedSize === size}
+                  aria-label={isAvailable ? `Taille ${size}` : `Taille ${size}, épuisée`}
                   className={cn(
                     "w-12 h-10 text-xs tracking-wider border transition-all duration-150",
                     selectedSize === size
-                      ? "bg-[#0A0A0A] text-white border-[#0A0A0A]"
+                      ? "bg-motif text-white border-motif"
                       : isAvailable
                       ? "border-[#E5E5E5] hover:border-[#0A0A0A]"
                       : "border-[#E5E5E5] text-[#C8C8C8] cursor-not-allowed line-through"
@@ -116,14 +122,14 @@ export default function VariantSelector({ variants }: VariantSelectorProps) {
       )}
 
       {/* Stock status */}
-      {stockStatus && (
-        <p className={`text-sm ${stockStatus.class}`}>{stockStatus.label}</p>
-      )}
+      <p aria-live="polite" className={`text-sm min-h-5 ${stockStatus?.class ?? ""}`}>
+        {stockStatus?.label}
+      </p>
 
       {/* CTA */}
       <a
-        href={`tel:${STORE_PHONE}`}
-        className="flex items-center justify-center gap-2 w-full py-4 bg-[#0A0A0A] text-white text-xs tracking-widest uppercase hover:bg-[#C8A882] transition-colors duration-200"
+        href={`tel:${STORE_PHONE.replace(/\s/g, "")}`}
+        className="flex items-center justify-center gap-2 w-full py-4 bg-motif text-white text-xs tracking-widest uppercase hover:bg-[#0A0A0A] transition-colors duration-200"
       >
         <Phone size={14} />
         Réserver en boutique

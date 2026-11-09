@@ -1,0 +1,25 @@
+# Service système du site Hoa Ly : démarre au boot et redémarre automatiquement en cas d'arrêt.
+[Unit]
+Description=Site Hoa Ly (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=hoaly
+Group=hoaly
+WorkingDirectory=/var/www/hoaly
+Environment=NODE_ENV=production
+Environment=NEXT_TELEMETRY_DISABLED=1
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -H 127.0.0.1 -p 3000
+Restart=always
+RestartSec=5
+
+# Durcissement : le site ne peut écrire que dans son cache et dans le dossier du catalogue.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/hoaly /var/www/hoaly/.next
+
+[Install]
+WantedBy=multi-user.target

@@ -1,52 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/server";
+import { adminRoute, readJson } from "@/lib/admin-api";
+import { getStore, NotFoundError } from "@/lib/store";
+import { parseProductPatch } from "@/lib/store/validate";
 
 interface Params { id: string }
 
-export async function GET(_: NextRequest, { params }: { params: Promise<Params> }) {
-  const auth = await getSession();
-  if (!auth) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-
-  const { id } = await params;
-  const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("*, category:categories(*), variants:product_variants(*)")
-    .eq("id", id)
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 404 });
-  return NextResponse.json(data);
+export async function GET(_: Request, { params }: { params: Promise<Params> }) {
+  return adminRoute(async () => {
+    const product = await getStore().getProduct((await params).id);
+    if (!product) throw new NotFoundError("Produit introuvable.");
+    return product;
+  });
 }
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<Params> }) {
-  const auth = await getSession();
-  if (!auth) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-
-  const { id } = await params;
-  const body = await req.json();
-  const supabase = createAdminClient();
-
-  const { data, error } = await supabase
-    .from("products")
-    .update({ ...body, updated_at: new Date().toISOString() })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+export async function PUT(req: Request, { params }: { params: Promise<Params> }) {
+  return adminRoute(
+    async () => getStore().updateProduct((await params).id, parseProductPatch(await readJson(req))),
+    { refresh: true }
+  );
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: Promise<Params> }) {
-  const auth = await getSession();
-  if (!auth) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-
-  const { id } = await params;
-  const supabase = createAdminClient();
-  const { error } = await supabase.from("products").delete().eq("id", id);
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true });
+export async function DELETE(_: Request, { params }: { params: Promise<Params> }) {
+  return adminRoute(async () => getStore().deleteProduct((await params).id), { refresh: true });
 }

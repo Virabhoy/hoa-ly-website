@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { Category } from "@/lib/supabase/types";
-import { OrnamentDivider } from "@/components/ui/ChineseMotifs";
+import type { Category } from "@/lib/catalog/types";
+import { CloudMotif, OrnamentDivider } from "@/components/ui/ChineseMotifs";
 
 interface CategoryGridProps {
   categories: Category[];
@@ -11,8 +11,9 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
   if (!categories.length) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-      <div className="flex items-center justify-between mb-10">
+    <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 overflow-hidden">
+      <CloudMotif className="pointer-events-none absolute -top-4 right-0 w-64 sm:w-80 text-motif opacity-15 hidden sm:block" />
+      <div className="relative flex items-center justify-between mb-10">
         <div>
           <h2
             className="text-3xl font-light tracking-wide"
@@ -45,6 +46,7 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
                   src={cat.cover_image}
                   alt={cat.name}
                   fill
+                  sizes={i === 0 ? "(min-width: 768px) 66vw, 50vw" : "(min-width: 768px) 33vw, 50vw"}
                   className="object-cover object-center group-hover:scale-[1.03] transition-transform duration-500"
                 />
               ) : (

@@ -1,0 +1,14 @@
+#!/bin/sh
+# Sauvegarde quotidienne du catalogue (installé dans /etc/cron.daily/ par install.sh) :
+# - fichiers : catalogue.json et photos envoyées depuis l'admin (/var/lib/hoaly) ;
+# - base PostgreSQL locale « hoaly », si elle existe (deploy/install-postgres.sh).
+# Garde 14 jours d'archives dans /var/backups/hoaly.
+set -e
+DEST=/var/backups/hoaly
+mkdir -p "$DEST"
+chmod 700 "$DEST"
+tar -czf "$DEST/catalogue-$(date +%F).tar.gz" -C /var/lib hoaly
+if command -v pg_dump >/dev/null 2>&1 && runuser -u postgres -- psql -tAc "SELECT 1 FROM pg_database WHERE datname = 'hoaly'" 2>/dev/null | grep -q 1; then
+  runuser -u postgres -- pg_dump --no-owner hoaly | gzip > "$DEST/base-$(date +%F).sql.gz"
+fi
+find "$DEST" \( -name 'catalogue-*.tar.gz' -o -name 'base-*.sql.gz' \) -mtime +14 -delete

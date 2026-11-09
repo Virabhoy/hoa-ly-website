@@ -10,10 +10,13 @@ import {
   getProductBySlug,
   getAllProducts,
   getRelatedProducts,
-} from "@/lib/supabase/queries";
+} from "@/lib/catalog/queries";
 import { formatPrice } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import { OrnamentDivider } from "@/components/ui/ChineseMotifs";
+import JsonLd from "@/components/seo/JsonLd";
+import { pageMetadata } from "@/lib/site";
+import { breadcrumbJsonLd, productJsonLd } from "@/lib/structured-data";
 
 interface Params {
   productSlug: string;
@@ -23,15 +26,13 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { productSlug } = await params;
   const product = await getProductBySlug(productSlug);
   if (!product) return { title: "Produit introuvable" };
-  return {
+  return pageMetadata({
     title: product.name,
     description:
-      product.description ??
-      `Découvrez ${product.name} — ${formatPrice(product.price)} — disponible chez Hoa Ly Paris 75013.`,
-    openGraph: {
-      images: product.cover_image ? [product.cover_image] : [],
-    },
-  };
+      product.description ?? `${product.name}, ${formatPrice(product.price)}, à découvrir chez Hoa Ly à Paris 13e.`,
+    path: `/produit/${product.slug}`,
+    image: product.cover_image,
+  });
 }
 
 export async function generateStaticParams() {
@@ -54,8 +55,17 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
   return (
     <>
+      <JsonLd data={productJsonLd(product)} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Accueil", path: "/" },
+          { name: "Catalogue", path: "/catalogue" },
+          ...(product.category ? [{ name: product.category.name, path: `/catalogue/${product.category.slug}` }] : []),
+          { name: product.name, path: `/produit/${product.slug}` },
+        ])}
+      />
       <Navbar />
-      <main className="pt-20">
+      <main id="contenu" className="pt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-xs text-[#6B6B6B] mb-8">
@@ -87,10 +97,19 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
             <ProductGallery images={product.images ?? []} name={product.name} />
 
             {/* Info */}
-            <div className="lg:sticky lg:top-24 space-y-6 self-start">
-              {product.category && (
+            <div className="lg:sticky lg:top-44 space-y-6 self-start">
+              {(product.category || product.collection) && (
                 <p className="text-xs tracking-widest uppercase text-[#6B6B6B]">
-                  {product.category.name}
+                  {product.category?.name}
+                  {product.category && product.collection && <span className="mx-2">·</span>}
+                  {product.collection && (
+                    <Link
+                      href={`/collections/${product.collection.slug}`}
+                      className="link-underline text-motif hover:text-[#0A0A0A] transition-colors duration-300"
+                    >
+                      Collection {product.collection.short_name}
+                    </Link>
+                  )}
                 </p>
               )}
               <h1

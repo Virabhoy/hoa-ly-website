@@ -1,19 +1,11 @@
-"use client";
+import type { Metadata } from "next";
 
-import { usePathname } from "next/navigation";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+// L'administration ne doit jamais apparaître dans les moteurs de recherche.
+export const metadata: Metadata = {
+  title: "Administration",
+  robots: { index: false, follow: false },
+};
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
-  if (pathname === "/admin/login") {
-    return <>{children}</>;
-  }
-
-  return (
-    <div className="flex min-h-screen bg-[#F5F5F5]">
-      <AdminSidebar />
-      <main className="flex-1 overflow-auto">{children}</main>
-    </div>
-  );
+  return children;
 }

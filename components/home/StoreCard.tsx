@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { MapPin, Phone, Clock, Train } from "lucide-react";
 import { OrnamentDivider } from "@/components/ui/ChineseMotifs";
-import { STORE_ADDRESS, STORE_HOURS, STORE_METRO, STORE_PHONE, STORE_LAT, STORE_LNG } from "@/lib/constants";
+import { STORE_ADDRESS, STORE_METRO, STORE_PHONE, STORE_LAT, STORE_LNG } from "@/lib/constants";
 
 const OpenStreetMap = dynamic(() => import("./OpenStreetMap"), {
   ssr: false,
@@ -14,7 +14,7 @@ const OpenStreetMap = dynamic(() => import("./OpenStreetMap"), {
   ),
 });
 
-export default function StoreCard() {
+export default function StoreCard({ hours }: { hours: Record<string, string> }) {
   const today = new Date().toLocaleDateString("fr-FR", { weekday: "long" });
   const todayCapitalized = today.charAt(0).toUpperCase() + today.slice(1);
 
@@ -34,7 +34,7 @@ export default function StoreCard() {
           </div>
 
           <div className="flex items-start gap-3 mb-6">
-            <MapPin size={16} className="mt-0.5 shrink-0 text-[#C8A882]" />
+            <MapPin size={16} className="mt-0.5 shrink-0 text-motif" />
             <div>
               <p className="text-xs tracking-widest uppercase text-[#6B6B6B] mb-1">Adresse</p>
               <p className="text-sm">{STORE_ADDRESS}</p>
@@ -42,7 +42,7 @@ export default function StoreCard() {
           </div>
 
           <div className="flex items-start gap-3 mb-6">
-            <Phone size={16} className="mt-0.5 shrink-0 text-[#C8A882]" />
+            <Phone size={16} className="mt-0.5 shrink-0 text-motif" />
             <div>
               <p className="text-xs tracking-widest uppercase text-[#6B6B6B] mb-1">Téléphone</p>
               <a href={`tel:${STORE_PHONE.replace(/\s/g, "")}`} className="text-sm hover:text-[#C8A882] transition-colors">
@@ -52,18 +52,18 @@ export default function StoreCard() {
           </div>
 
           <div className="flex items-start gap-3 mb-6">
-            <Clock size={16} className="mt-0.5 shrink-0 text-[#C8A882]" />
+            <Clock size={16} className="mt-0.5 shrink-0 text-motif" />
             <div className="flex-1">
               <p className="text-xs tracking-widest uppercase text-[#6B6B6B] mb-3">Horaires</p>
               <table className="w-full text-sm">
                 <tbody>
-                  {Object.entries(STORE_HOURS).map(([day, hours]) => (
+                  {Object.entries(hours).map(([day, time]) => (
                     <tr
                       key={day}
-                      className={`${day === todayCapitalized ? "font-medium text-[#C8A882]" : "text-[#6B6B6B]"}`}
+                      className={`${day === todayCapitalized ? "font-medium text-motif" : "text-[#6B6B6B]"}`}
                     >
                       <td className="py-0.5 pr-4">{day}</td>
-                      <td className="py-0.5">{hours}</td>
+                      <td className="py-0.5">{time}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -72,7 +72,7 @@ export default function StoreCard() {
           </div>
 
           <div className="flex items-start gap-3">
-            <Train size={16} className="mt-0.5 shrink-0 text-[#C8A882]" />
+            <Train size={16} className="mt-0.5 shrink-0 text-motif" />
             <div>
               <p className="text-xs tracking-widest uppercase text-[#6B6B6B] mb-3">Accès Métro</p>
               <div className="flex flex-wrap gap-3">

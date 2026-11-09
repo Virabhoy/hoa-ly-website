@@ -1,4 +1,4 @@
-import type { Category, Collection, Product, ProductVariant } from "./supabase/types";
+import type { Category, Collection, Product, ProductVariant } from "./catalog/types";
 
 const U = (id: string, w = 800, h = 1067) =>
   `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
@@ -17,11 +17,11 @@ export const DEMO_CATEGORIES: Category[] = [
 
 // ─── Collections saisonnières ─────────────────────────────────────
 export const DEMO_COLLECTIONS: Collection[] = [
-  { id: "col-1", slug: "printemps-ete-2026", name: "Printemps-Été 2026", short_name: "PE 2026", description: "Soies légères, áo dài fleuris et bleus lumineux pour accueillir les beaux jours.", cover_image: L("D04B9112.jpg"), is_archived: false, display_order: 0, created_at: "" },
-  { id: "col-2", slug: "automne-hiver-2025", name: "Automne-Hiver 2025", short_name: "AH 2025", description: "Satins profonds, broderies dragon et noirs intenses : l'élégance des soirées d'hiver.", cover_image: L("D04B9128.jpg"), is_archived: false, display_order: 1, created_at: "" },
-  { id: "col-3", slug: "printemps-ete-2025", name: "Printemps-Été 2025", short_name: "PE 2025", description: "Imprimés wax et couleurs éclatantes, une collection joyeuse photographiée à Paris.", cover_image: L("D04B8981.jpg"), is_archived: false, display_order: 2, created_at: "" },
-  { id: "col-4", slug: "automne-hiver-2024", name: "Automne-Hiver 2024", short_name: "AH 2024", description: "Ensembles kung fu et broderies en relief, entre tradition et allure urbaine.", cover_image: L("D04B9149.jpg"), is_archived: true, display_order: 3, created_at: "" },
-  { id: "col-5", slug: "printemps-ete-2024", name: "Printemps-Été 2024", short_name: "PE 2024", description: "Kimonos fleuris et tons bordeaux, une ode au romantisme asiatique.", cover_image: L("D04B9153.jpg"), is_archived: true, display_order: 4, created_at: "" },
+  { id: "col-1", slug: "printemps-ete-2026", name: "Printemps-Été 2026", short_name: "PE 2026", description: "Soies légères, áo dài fleuris et bleus lumineux pour accueillir les beaux jours.", cover_image: L("D04B9112.jpg"), images: [L("D04B9112.jpg"), L("D04B9067.jpg"), L("D04B9137.jpg"), L("D04B8981.jpg")], is_archived: false, display_order: 0, created_at: "" },
+  { id: "col-2", slug: "automne-hiver-2025", name: "Automne-Hiver 2025", short_name: "AH 2025", description: "Satins profonds, broderies dragon et noirs intenses : l'élégance des soirées d'hiver.", cover_image: L("D04B9128.jpg"), images: [L("D04B9128.jpg"), L("D04B8902.jpg"), L("D04B9149.jpg"), L("D04B9182.jpg")], is_archived: false, display_order: 1, created_at: "" },
+  { id: "col-3", slug: "printemps-ete-2025", name: "Printemps-Été 2025", short_name: "PE 2025", description: "Imprimés wax et couleurs éclatantes, une collection joyeuse photographiée à Paris.", cover_image: L("D04B8981.jpg"), images: [L("D04B8981.jpg"), L("D04B9146.jpg"), L("D04B9094.jpg"), L("D04B9161.jpg")], is_archived: false, display_order: 2, created_at: "" },
+  { id: "col-4", slug: "automne-hiver-2024", name: "Automne-Hiver 2024", short_name: "AH 2024", description: "Ensembles kung fu et broderies en relief, entre tradition et allure urbaine.", cover_image: L("D04B9149.jpg"), images: [L("D04B9149.jpg"), L("D04B9089.jpg"), L("D04B9150.jpg"), L("D04B8910.jpg")], is_archived: true, display_order: 3, created_at: "" },
+  { id: "col-5", slug: "printemps-ete-2024", name: "Printemps-Été 2024", short_name: "PE 2024", description: "Kimonos fleuris et tons bordeaux, une ode au romantisme asiatique.", cover_image: L("D04B9153.jpg"), images: [L("D04B9153.jpg"), L("D04B9161.jpg"), L("D04B9067.jpg"), L("PER_9038.jpg")], is_archived: true, display_order: 4, created_at: "" },
 ];
 
 // ─── Variantes helpers ────────────────────────────────────────────
@@ -35,7 +35,10 @@ function sizes(productId: string, colorName: string, colorHex: string, stocks: n
 }
 
 // ─── Produits ─────────────────────────────────────────────────────
-export const DEMO_PRODUCTS: Product[] = [
+// La collection de chaque produit est déduite au premier lancement (voir lib/store/local.ts).
+export type DemoProduct = Omit<Product, "collection_id">;
+
+export const DEMO_PRODUCTS: DemoProduct[] = [
   // ── NOUVEAUTÉS ── (photos d'illustration Unsplash)
   {
     id: "p-n1", slug: "robe-midi-pois-rouge", name: "Robe Midi à Pois Rouge",
@@ -175,11 +178,11 @@ export const DEMO_PRODUCTS: Product[] = [
     variants: [...sizes("p-r7", "Camel", "#C19A6B", [4, 8, 10, 8, 4, 1]), ...sizes("p-r7", "Gris chiné", "#888888", [3, 6, 9, 6, 3, 1])],
   },
   {
-    id: "p-r8", slug: "robe-chemise-vichy", name: "Robe Chemise Vichy",
-    description: "Robe chemise à carreaux vichy, boutonnée devant. Style campagne chic, entièrement doublée.",
+    id: "p-r8", slug: "robe-midi-marine", name: "Robe Midi Marine",
+    description: "Robe midi bleu marine à jupe plissée, coupe sobre et structurée. Une pièce facile à porter du bureau au dîner.",
     category_id: "cat-2", price: 72.00,
-    images: [U("1519657337289-077653f0ac36"), U("1566174053879-31528523f8ae")],
-    cover_image: U("1519657337289-077653f0ac36"), is_featured: false, is_active: true, display_order: 7, created_at: "", updated_at: "",
+    images: [U("1485968579580-b6d095142e6e")],
+    cover_image: U("1485968579580-b6d095142e6e"), is_featured: false, is_active: true, display_order: 7, created_at: "", updated_at: "",
     category: DEMO_CATEGORIES[1],
     variants: [...sizes("p-r8", "Bleu/Blanc", "#4A90D9", [5, 9, 12, 9, 4, 1])],
   },
@@ -417,24 +420,3 @@ export const DEMO_PRODUCTS: Product[] = [
     variants: [v("p-a3", "Noir", "#0A0A0A", "TU", 10), v("p-a3", "Cognac", "#8B4513", "TU", 7)],
   },
 ];
-
-// ─── Utilitaires ──────────────────────────────────────────────────
-export function getDemoProductsByCategory(categoryId: string): Product[] {
-  return DEMO_PRODUCTS.filter((p) => p.category_id === categoryId);
-}
-
-export function getDemoProductBySlug(slug: string): Product | null {
-  return DEMO_PRODUCTS.find((p) => p.slug === slug) ?? null;
-}
-
-export function getDemoCategoryBySlug(slug: string): Category | null {
-  return DEMO_CATEGORIES.find((c) => c.slug === slug) ?? null;
-}
-
-export function getDemoFeatured(limit = 8): Product[] {
-  return DEMO_PRODUCTS.filter((p) => p.is_featured).slice(0, limit);
-}
-
-export function getDemoRelated(categoryId: string, excludeId: string, limit = 4): Product[] {
-  return DEMO_PRODUCTS.filter((p) => p.category_id === categoryId && p.id !== excludeId).slice(0, limit);
-}

@@ -1,50 +1,9 @@
 import { Star, ExternalLink, Quote } from "lucide-react";
-import type { GooglePlaceData, GoogleReview } from "@/lib/supabase/types";
+import type { GooglePlaceData, GoogleReview } from "@/lib/catalog/types";
 import { CloudMotif } from "@/components/ui/ChineseMotifs";
 
-// ─── Avis de démonstration ────────────────────────────────────────
-const DEMO_DATA: GooglePlaceData = {
-  name: "Hoa Ly",
-  rating: 4.8,
-  totalRatings: 147,
-  reviews: [
-    {
-      rating: 5,
-      text: "Boutique magnifique ! La sélection est très bien faite et les conseils des vendeuses sont précieux. J'ai trouvé ma robe de soirée parfaite ici. Je reviendrai sans hésiter.",
-      authorName: "Sophie M.",
-      authorPhoto: null,
-      relativeTime: "il y a 2 semaines",
-    },
-    {
-      rating: 5,
-      text: "Un vrai coup de cœur ! Des vêtements de qualité à des prix très accessibles. L'ambiance est chaleureuse, le service impeccable. Un incontournable du 13e.",
-      authorName: "Camille D.",
-      authorPhoto: null,
-      relativeTime: "il y a 1 mois",
-    },
-    {
-      rating: 5,
-      text: "J'adore cette boutique, j'y reviens à chaque saison. La collection automne-hiver est superbe cette année. La gérante a un œil parfait pour choisir ses pièces.",
-      authorName: "Marie L.",
-      authorPhoto: null,
-      relativeTime: "il y a 3 semaines",
-    },
-    {
-      rating: 5,
-      text: "Service exceptionnel et vêtements de belle qualité. La vitrine donne envie d'entrer et on ne ressort jamais les mains vides. Merci à toute l'équipe !",
-      authorName: "Isabelle R.",
-      authorPhoto: null,
-      relativeTime: "il y a 1 semaine",
-    },
-    {
-      rating: 4,
-      text: "Très belle boutique avec une sélection originale et tendance. Personnel attentionné et de bons conseils. Je recommande vivement pour trouver des pièces uniques.",
-      authorName: "Nguyen T.",
-      authorPhoto: null,
-      relativeTime: "il y a 2 mois",
-    },
-  ],
-};
+// Seuls de vrais avis, issus de la fiche Google de la boutique, sont affichés.
+// Sans clé API (ou sans avis), la section n'apparaît pas : jamais de contenu inventé.
 
 interface GoogleReviewsProps {
   data: GooglePlaceData | null;
@@ -110,11 +69,24 @@ function ReviewCard({ review, index }: { review: GoogleReview; index: number }) 
           </div>
         )}
         <div>
-          <p className="text-sm font-medium text-[#0A0A0A]">{review.authorName}</p>
+          {review.authorUrl ? (
+            <a
+              href={review.authorUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-[#0A0A0A] hover:text-motif"
+            >
+              {review.authorName}
+            </a>
+          ) : (
+            <p className="text-sm font-medium text-[#0A0A0A]">{review.authorName}</p>
+          )}
           <p className="text-xs text-[#6B6B6B]">{review.relativeTime}</p>
         </div>
         {/* Google logo */}
         <svg
+          role="img"
+          aria-label="Avis Google"
           className="ml-auto flex-shrink-0 opacity-40"
           width="16"
           height="16"
@@ -132,8 +104,8 @@ function ReviewCard({ review, index }: { review: GoogleReview; index: number }) 
 }
 
 export default function GoogleReviews({ data }: GoogleReviewsProps) {
-  // Utilise les données réelles si disponibles, sinon les données de démo
-  const display = data ?? DEMO_DATA;
+  if (!data || data.totalRatings === 0 || data.reviews.length === 0) return null;
+  const display = data;
 
   return (
     <section className="relative bg-[#F0EDE8] py-20 overflow-hidden">
@@ -165,7 +137,7 @@ export default function GoogleReviews({ data }: GoogleReviewsProps) {
               <div className="space-y-1">
                 <StarRating rating={Math.round(display.rating)} size={16} />
                 <p className="text-xs text-[#6B6B6B] tracking-wide">
-                  {display.totalRatings} avis vérifiés
+                  {display.totalRatings} avis sur Google
                 </p>
               </div>
             </div>
@@ -200,8 +172,8 @@ export default function GoogleReviews({ data }: GoogleReviewsProps) {
                   </p>
                   <div className="flex items-center gap-3 mt-3">
                     <StarRating rating={review.rating} size={11} />
-                    <span className="text-xs text-[#6B6B6B]">— {review.authorName}</span>
-                    <span className="text-xs text-[#C8C8C8]">{review.relativeTime}</span>
+                    <span className="text-xs text-[#4A4A4A]">{review.authorName}</span>
+                    <span className="text-xs text-[#6B6B6B]">{review.relativeTime}</span>
                   </div>
                 </div>
               </div>
@@ -209,26 +181,6 @@ export default function GoogleReviews({ data }: GoogleReviewsProps) {
           </div>
         )}
 
-        {/* Bandeau de confiance */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-8 text-center">
-          {[
-            { value: display.rating.toFixed(1) + "/5", label: "Note moyenne" },
-            { value: display.totalRatings + "+", label: "Avis clients" },
-            { value: "100%", label: "Avis vérifiés Google" },
-          ].map((stat) => (
-            <div key={stat.label} className="px-6">
-              <p
-                className="text-3xl font-light text-[#0A0A0A]"
-                style={{ fontFamily: "var(--font-cormorant)" }}
-              >
-                {stat.value}
-              </p>
-              <p className="text-xs tracking-widest uppercase text-[#6B6B6B] mt-1">
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { Product } from "@/lib/supabase/types";
+import type { Product } from "@/lib/catalog/types";
 import { formatPrice } from "@/lib/utils";
 
 interface ProductCardProps {
@@ -11,7 +11,7 @@ function getStockStatus(product: Product): { label: string; color: string } {
   if (!product.variants?.length) return { label: "", color: "" };
   const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
   if (totalStock === 0) return { label: "Épuisé", color: "text-red-600" };
-  if (totalStock <= 3) return { label: "Dernières pièces", color: "text-[#C8A882]" };
+  if (totalStock <= 3) return { label: "Dernières pièces", color: "text-amber-800" };
   return { label: "En stock", color: "text-green-700" };
 }
 
@@ -26,6 +26,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             src={product.cover_image}
             alt={product.name}
             fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
             className="object-cover object-center group-hover:scale-[1.04] transition-transform duration-500"
           />
         ) : (
@@ -43,7 +44,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <p className="text-[10px] tracking-widest uppercase text-[#6B6B6B]">
           {product.category?.name ?? ""}
         </p>
-        <p className="text-sm group-hover:text-[#C8A882] transition-colors leading-snug">
+        <p className="text-sm group-hover:text-motif transition-colors leading-snug">
           {product.name}
         </p>
         <div className="flex items-center justify-between">
