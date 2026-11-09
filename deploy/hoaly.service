@@ -14,11 +14,29 @@ ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -H 127.0.0.1 -p 30
 Restart=always
 RestartSec=5
 
-# Durcissement : le site ne peut écrire que dans son cache et dans le dossier du catalogue.
+# Mémoire plafonnée : en cas d'abus, seul le site redémarre, le serveur reste joignable.
+MemoryMax=1G
+
+# Durcissement : le site ne peut écrire que dans son cache et dans le dossier du catalogue,
+# et n'a accès ni au matériel, ni au noyau, ni à des privilèges supplémentaires.
 NoNewPrivileges=true
 PrivateTmp=true
+PrivateDevices=true
 ProtectHome=true
 ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+UMask=0027
 ReadWritePaths=/var/lib/hoaly /var/www/hoaly/.next
 
 [Install]

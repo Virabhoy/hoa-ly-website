@@ -10,12 +10,12 @@ import { ValidationError } from "./types";
  * et contre les requêtes vers d'autres serveurs) :
  * - /media/... : photos envoyées depuis l'admin (stockage en fichiers) ;
  * - /images/... et autres fichiers de public/ ;
- * - les hébergeurs d'images déjà autorisés dans next.config.ts (Unsplash, Google).
+ * - Unsplash, seul hébergeur autorisé dans next.config.ts (photos de démonstration).
  */
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
 const IMAGE_FILE = /\.(jpe?g|png|webp|avif)$/i;
-const REMOTE_HOSTS = [/^images\.unsplash\.com$/, /^plus\.unsplash\.com$/, /^lh3\.googleusercontent\.com$/];
+const REMOTE_HOSTS = [/^images\.unsplash\.com$/, /^plus\.unsplash\.com$/];
 
 async function readLocal(file: string): Promise<Buffer> {
   try {

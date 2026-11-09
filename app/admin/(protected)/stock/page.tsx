@@ -43,7 +43,7 @@ export default function AdminStockPage() {
     const toUpdate: VariantUpdate[] = Object.entries(updates).map(([id, stock]) => ({ id, stock }));
     try {
       // L'une après l'autre : le stockage local enregistre chaque modification à la suite.
-      for (const { id, stock } of toUpdate) await api(`/api/admin/variants/${id}`, "PUT", { stock });
+      for (const { id, stock } of toUpdate) await api(`/api/admin/variants/${encodeURIComponent(id)}`, "PUT", { stock });
     } catch (e) {
       alert(errorMessage(e));
       setSaving(false);

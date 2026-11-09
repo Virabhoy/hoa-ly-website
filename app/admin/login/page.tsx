@@ -15,17 +15,22 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-    setLoading(false);
-    if (res.ok) {
-      router.push("/admin");
-    } else {
-      const data = await res.json();
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      if (res.ok) {
+        router.push("/admin");
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
       setError(data.error ?? "Erreur de connexion");
+    } catch {
+      setError("Connexion impossible : vérifiez votre accès internet et réessayez.");
+    } finally {
+      setLoading(false);
     }
   }
 

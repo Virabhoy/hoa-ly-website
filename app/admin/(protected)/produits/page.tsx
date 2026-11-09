@@ -52,6 +52,11 @@ export default function AdminProductsPage() {
     load();
   }, [load]);
 
+  // Changer de recherche ou de filtre vide la sélection, pour ne jamais agir sur des produits masqués.
+  useEffect(() => {
+    setSelected(new Set());
+  }, [search, category, collection, status]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return products.filter((p) => {
@@ -70,7 +75,7 @@ export default function AdminProductsPage() {
   async function patch(product: Product, changes: Partial<Product>) {
     setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, ...changes } : p)));
     try {
-      await api(`/api/admin/products/${product.id}`, "PUT", changes);
+      await api(`/api/admin/products/${encodeURIComponent(product.id)}`, "PUT", changes);
     } catch (e) {
       setProducts((prev) => prev.map((p) => (p.id === product.id ? product : p)));
       alert(errorMessage(e));
@@ -82,7 +87,7 @@ export default function AdminProductsPage() {
     if (!confirm(`Supprimer ${label} définitivement ?`)) return;
     setBusy("delete");
     try {
-      for (const id of ids) await api(`/api/admin/products/${id}`, "DELETE");
+      for (const id of ids) await api(`/api/admin/products/${encodeURIComponent(id)}`, "DELETE");
     } catch (e) {
       alert(errorMessage(e));
     }
@@ -94,7 +99,7 @@ export default function AdminProductsPage() {
   async function setVisibility(ids: string[], is_active: boolean) {
     setBusy(is_active ? "show" : "hide");
     try {
-      for (const id of ids) await api(`/api/admin/products/${id}`, "PUT", { is_active });
+      for (const id of ids) await api(`/api/admin/products/${encodeURIComponent(id)}`, "PUT", { is_active });
     } catch (e) {
       alert(errorMessage(e));
     }
@@ -113,7 +118,8 @@ export default function AdminProductsPage() {
   }
 
   const allSelected = filtered.length > 0 && filtered.every((p) => selected.has(p.id));
-  const selectedIds = Array.from(selected);
+  // Seuls les produits visibles avec les filtres actuels sont concernés par les actions groupées.
+  const selectedIds = filtered.filter((p) => selected.has(p.id)).map((p) => p.id);
   const select = "border border-[#E5E5E5] px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-[#0A0A0A]";
 
   return (
@@ -166,9 +172,9 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Actions groupées */}
-      {selected.size > 0 && (
+      {selectedIds.length > 0 && (
         <div className="flex flex-wrap items-center gap-3 mb-4 px-4 py-3 bg-[#0A0A0A] text-white text-sm">
-          <span>{selected.size} sélectionné{selected.size > 1 ? "s" : ""}</span>
+          <span>{selectedIds.length} sélectionné{selectedIds.length > 1 ? "s" : ""}</span>
           <div className="flex flex-wrap gap-2 sm:ml-auto">
             <BulkButton onClick={() => setVisibility(selectedIds, true)} busy={busy === "show"}>Afficher</BulkButton>
             <BulkButton onClick={() => setVisibility(selectedIds, false)} busy={busy === "hide"}>Masquer</BulkButton>

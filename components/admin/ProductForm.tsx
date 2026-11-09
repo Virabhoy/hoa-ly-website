@@ -140,7 +140,7 @@ export default function ProductForm({ product, categories, collections }: Produc
 
     setSaving(true);
     try {
-      if (product) await api(`/api/admin/products/${product.id}`, "PUT", payload);
+      if (product) await api(`/api/admin/products/${encodeURIComponent(product.id)}`, "PUT", payload);
       else await api("/api/admin/products", "POST", payload);
       router.push("/admin/produits");
       router.refresh();
@@ -154,7 +154,7 @@ export default function ProductForm({ product, categories, collections }: Produc
     if (!product || !confirm(`Supprimer « ${product.name} » définitivement ?`)) return;
     setDeleting(true);
     try {
-      await api(`/api/admin/products/${product.id}`, "DELETE");
+      await api(`/api/admin/products/${encodeURIComponent(product.id)}`, "DELETE");
       router.push("/admin/produits");
       router.refresh();
     } catch (err) {

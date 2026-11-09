@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { MapPin, Phone, Clock, Train } from "lucide-react";
 import { OrnamentDivider } from "@/components/ui/ChineseMotifs";
@@ -15,8 +16,11 @@ const OpenStreetMap = dynamic(() => import("./OpenStreetMap"), {
 });
 
 export default function StoreCard({ hours }: { hours: Record<string, string> }) {
-  const today = new Date().toLocaleDateString("fr-FR", { weekday: "long" });
-  const todayCapitalized = today.charAt(0).toUpperCase() + today.slice(1);
+  const [todayCapitalized, setToday] = useState("");
+  useEffect(() => {
+    const today = new Date().toLocaleDateString("fr-FR", { weekday: "long", timeZone: "Europe/Paris" });
+    setToday(today.charAt(0).toUpperCase() + today.slice(1));
+  }, []);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

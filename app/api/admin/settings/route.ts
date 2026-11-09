@@ -1,20 +1,22 @@
 import { adminRoute, readJson } from "@/lib/admin-api";
-import { getStore, ValidationError } from "@/lib/store";
-import type { Json } from "@/lib/catalog/types";
+import { getStore } from "@/lib/store";
+import { parseSetting } from "@/lib/store/validate";
 
-const KEYS = ["store_hours", "announcement"];
+// Seuls les réglages modifiables depuis l'admin sont renvoyés (pas les réglages internes comme « auth »).
+const PUBLIC_KEYS = ["store_hours", "announcement"];
 
 export async function GET() {
   return adminRoute(async () =>
-    Object.entries(await getStore().getSettings()).map(([key, value]) => ({ key, value }))
+    Object.entries(await getStore().getSettings())
+      .filter(([key]) => PUBLIC_KEYS.includes(key))
+      .map(([key, value]) => ({ key, value }))
   );
 }
 
 export async function POST(req: Request) {
   return adminRoute(
     async () => {
-      const { key, value } = (await readJson(req)) as { key?: string; value?: Json };
-      if (!key || !KEYS.includes(key) || value === undefined) throw new ValidationError("Paramètre inconnu.");
+      const { key, value } = parseSetting(await readJson(req));
       await getStore().setSetting(key, value);
     },
     { refresh: true }

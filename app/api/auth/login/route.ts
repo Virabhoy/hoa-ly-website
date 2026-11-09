@@ -17,6 +17,9 @@ function sameSecret(given: string, expected: string): boolean {
 const noStore = { "Cache-Control": "no-store" };
 
 export async function POST(req: Request) {
+  if (Number(req.headers.get("content-length") ?? 0) > 2048) {
+    return NextResponse.json({ error: "Requête trop volumineuse." }, { status: 413, headers: noStore });
+  }
   const ip = clientIp(req);
   const wait = attempts.retryAfter(ip);
   if (wait > 0) {

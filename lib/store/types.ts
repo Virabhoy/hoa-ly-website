@@ -39,7 +39,7 @@ export interface ProductInput {
 
 /**
  * Point d'accès unique aux données du catalogue.
- * Deux implémentations : fichier local (tant que Supabase n'est pas branché) et Supabase.
+ * Deux implémentations : fichiers sur le serveur (par défaut) et PostgreSQL (si DATABASE_URL est définie).
  */
 export interface CatalogStore {
   readonly mode: "local" | "postgres";

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import Spinner from "@/components/ui/Spinner";
 import { STORE_HOURS } from "@/lib/constants";
+import { api, errorMessage } from "@/lib/admin-client";
 
 type Hours = Record<string, string>;
 
@@ -14,50 +15,58 @@ export default function AdminParametresPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     async function fetchSettings() {
-      const res = await fetch("/api/admin/settings");
-      if (res.ok) {
-        const data: Array<{ key: string; value: unknown }> = await res.json();
+      try {
+        const data = await api<Array<{ key: string; value: unknown }>>("/api/admin/settings");
         for (const s of data) {
-          if (s.key === "store_hours") setHours(s.value as Hours);
-          if (s.key === "announcement") {
-            const v = s.value as { enabled: boolean; text: string };
+          if (s.key === "store_hours" && s.value && typeof s.value === "object") {
+            setHours({ ...STORE_HOURS, ...(s.value as Hours) });
+          }
+          if (s.key === "announcement" && s.value && typeof s.value === "object") {
+            const v = s.value as { enabled?: boolean; text?: string };
             setAnnouncement(v.text ?? "");
-            setAnnouncementEnabled(v.enabled ?? false);
+            setAnnouncementEnabled(v.enabled === true);
           }
         }
+      } catch (e) {
+        setLoadError(errorMessage(e));
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     fetchSettings();
   }, []);
 
-  async function saveSetting(key: string, value: unknown) {
-    return fetch("/api/admin/settings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key, value }),
-    });
-  }
-
   async function handleSave() {
     setSaving(true);
-    const results = [
-      await saveSetting("store_hours", hours),
-      await saveSetting("announcement", { enabled: announcementEnabled, text: announcement }),
-    ];
-    setSaving(false);
-    if (results.some((r) => !r.ok)) {
-      alert("L'enregistrement a échoué, réessayez.");
-      return;
+    try {
+      await api("/api/admin/settings", "POST", { key: "store_hours", value: hours });
+      await api("/api/admin/settings", "POST", {
+        key: "announcement",
+        value: { enabled: announcementEnabled, text: announcement },
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      alert(errorMessage(e));
+    } finally {
+      setSaving(false);
     }
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   }
 
   if (loading) return <div className="flex justify-center py-24"><Spinner className="w-6 h-6" /></div>;
+  if (loadError) {
+    return (
+      <div className="p-4 sm:p-8 max-w-2xl">
+        <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 px-4 py-3">
+          Impossible de charger les paramètres ({loadError}). Rechargez la page avant de modifier quoi que ce soit.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-8 max-w-2xl">

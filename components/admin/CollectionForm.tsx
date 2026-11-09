@@ -51,7 +51,7 @@ export default function CollectionForm({ collection, nextOrder = 0 }: Collection
 
     setSaving(true);
     try {
-      if (collection) await api(`/api/admin/collections/${collection.id}`, "PUT", payload);
+      if (collection) await api(`/api/admin/collections/${encodeURIComponent(collection.id)}`, "PUT", payload);
       else await api("/api/admin/collections", "POST", payload);
       router.push("/admin/collections");
       router.refresh();
@@ -69,7 +69,7 @@ export default function CollectionForm({ collection, nextOrder = 0 }: Collection
       return;
     setDeleting(true);
     try {
-      await api(`/api/admin/collections/${collection.id}`, "DELETE");
+      await api(`/api/admin/collections/${encodeURIComponent(collection.id)}`, "DELETE");
       router.push("/admin/collections");
       router.refresh();
     } catch (err) {

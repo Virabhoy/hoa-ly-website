@@ -74,7 +74,7 @@ export default function AdminCategoriesPage() {
     };
     try {
       if (editing === "new") await api("/api/admin/categories", "POST", payload);
-      else await api(`/api/admin/categories/${editing}`, "PUT", payload);
+      else await api(`/api/admin/categories/${encodeURIComponent(editing ?? "")}`, "PUT", payload);
       setEditing(null);
       await load();
     } catch (e) {
@@ -89,7 +89,7 @@ export default function AdminCategoriesPage() {
     const warning = n ? ` Ses ${n} produit${n > 1 ? "s" : ""} seront conservés, sans catégorie.` : "";
     if (!confirm(`Supprimer la catégorie « ${cat.name} » ?${warning}`)) return;
     try {
-      await api(`/api/admin/categories/${cat.id}`, "DELETE");
+      await api(`/api/admin/categories/${encodeURIComponent(cat.id)}`, "DELETE");
       await load();
     } catch (e) {
       alert(errorMessage(e));
@@ -136,7 +136,7 @@ export default function AdminCategoriesPage() {
           <p className={label}>Photo</p>
           <ImageListEditor
             images={draft.cover_image ? [draft.cover_image] : []}
-            onChange={(imgs) => setDraft({ ...draft, cover_image: imgs[0] ?? null })}
+            onChange={(imgs) => setDraft((d) => ({ ...d, cover_image: imgs[0] ?? null }))}
             onUploadingChange={setUploading}
             max={1}
           />

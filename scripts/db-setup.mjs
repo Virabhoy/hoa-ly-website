@@ -11,6 +11,7 @@
 //
 // Lit DATABASE_URL (et HOALY_DATA_DIR) dans .env.local, comme le site.
 // =============================================================================
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import nextEnv from "@next/env";
@@ -31,7 +32,12 @@ function config() {
   const mode = process.env.DATABASE_SSL ?? "auto";
   const local = ["localhost", "127.0.0.1", "::1"].includes(u.hostname);
   let ssl = false;
-  if (mode === "verify") ssl = { rejectUnauthorized: true };
+  if (mode === "verify") {
+    ssl = {
+      rejectUnauthorized: true,
+      ...(process.env.DATABASE_SSL_CA ? { ca: readFileSync(process.env.DATABASE_SSL_CA, "utf8") } : {}),
+    };
+  }
   else if (mode === "require" || (mode === "auto" && !local)) ssl = { rejectUnauthorized: false };
   return { connectionString: u.toString(), ssl, connectionTimeoutMillis: 15_000 };
 }

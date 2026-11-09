@@ -17,7 +17,7 @@ import {
 } from "./types";
 
 /*
- * Stockage en fichiers, utilisé quand Supabase n'est pas configuré (en local et sur le VPS IONOS).
+ * Stockage en fichiers, utilisé quand aucune base PostgreSQL n'est configurée (DATABASE_URL vide).
  * Tout le catalogue tient dans catalogue.json, les photos envoyées vont dans uploads/
  * et sont servies par la route /media/[file].
  * Sur le serveur, HOALY_DATA_DIR place ces fichiers hors du dossier du site (ex. /var/lib/hoaly),
@@ -124,7 +124,7 @@ function mutate<T>(fn: (db: LocalDb) => T): Promise<T> {
     } catch (e) {
       if (isReadOnlyError(e)) {
         throw new ValidationError(
-          "Le stockage local est en lecture seule sur cet hébergement : connectez Supabase pour modifier le catalogue."
+          "Le stockage en fichiers est en lecture seule sur cet hébergement : branchez une base PostgreSQL (DATABASE_URL) pour modifier le catalogue."
         );
       }
       throw e;
@@ -361,7 +361,7 @@ export const localStore: CatalogStore = {
       await fs.writeFile(path.join(UPLOADS_DIR, name), image.data);
     } catch (e) {
       if (isReadOnlyError(e)) {
-        throw new ValidationError("Impossible d'enregistrer la photo sur cet hébergement : connectez Supabase.");
+        throw new ValidationError("Impossible d'enregistrer la photo : le dossier des photos n'est pas accessible en écriture sur ce serveur.");
       }
       throw e;
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, Crop, ImagePlus, Star, X } from "lucide-react";
 import ImageCropDialog from "@/components/admin/ImageCropDialog";
@@ -30,6 +30,10 @@ export default function ImageListEditor({
 }: ImageListEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(0);
+  const latestImages = useRef(images);
+  useEffect(() => {
+    latestImages.current = images;
+  }, [images]);
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
   // Index de la photo en cours de recadrage.
@@ -53,7 +57,7 @@ export default function ImageListEditor({
       }
       setUploading((n) => n - 1);
     }
-    onChange([...images, ...added].slice(0, max));
+    onChange([...latestImages.current, ...added].slice(0, max));
     onUploadingChange?.(false);
   }
 

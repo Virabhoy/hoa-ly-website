@@ -136,6 +136,13 @@ step "9/10 Nginx et pare-feu"
 sed "s/__DOMAIN__/${DOMAIN}/g" "$SRC/deploy/nginx-hoaly.conf" > /etc/nginx/sites-available/hoaly
 ln -sf /etc/nginx/sites-available/hoaly /etc/nginx/sites-enabled/hoaly
 rm -f /etc/nginx/sites-enabled/default
+# Refus HTTPS des domaines inconnus : directive disponible à partir de Nginx 1.19.4.
+NGINX_VERSION=$(nginx -v 2>&1 | sed -E 's/.*nginx\/([0-9.]+).*/\1/')
+if [[ "$(printf '%s\n' 1.19.4 "$NGINX_VERSION" | sort -V | head -1)" == "1.19.4" ]]; then
+  install -m 0644 "$SRC/deploy/nginx-hoaly-default-tls.conf" /etc/nginx/conf.d/hoaly-default-tls.conf
+else
+  echo "Nginx $NGINX_VERSION : refus HTTPS des domaines inconnus non disponible (1.19.4 requis), étape ignorée."
+fi
 nginx -t
 systemctl reload nginx
 ufw allow OpenSSH >/dev/null

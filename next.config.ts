@@ -37,11 +37,11 @@ const nextConfig: NextConfig = {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
   images: {
+    // Plafonds : un visiteur ne peut pas faire télécharger d'énormes images ni remplir le disque.
+    maximumResponseBody: 15_000_000,
+    maximumDiskCacheSize: 500_000_000,
+    // Unsplash ne sert qu'au catalogue de démonstration : à retirer une fois les vrais produits saisis.
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "lh3.googleusercontent.com",
-      },
       {
         protocol: "https",
         hostname: "images.unsplash.com",

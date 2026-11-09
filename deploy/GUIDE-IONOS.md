@@ -117,7 +117,14 @@ Envoyer la nouvelle archive comme à l'étape 4, la décompresser sur le serveur
 sudo bash deploy/update.sh
 ```
 
-Le catalogue et la configuration ne sont jamais touchés par une mise à jour. Une sauvegarde est faite juste avant.
+Le déroulement est sans risque :
+
+1. le catalogue est sauvegardé ;
+2. la nouvelle version est compilée à côté, pendant que le site actuel reste en ligne ;
+3. si la compilation échoue, rien n'est changé ;
+4. sinon le site bascule en quelques secondes ; si la nouvelle version ne répond pas, l'ancienne est remise en place automatiquement.
+
+Le catalogue et la configuration ne sont jamais touchés. La version précédente reste dans `/var/www/hoaly-prev` (la commande de retour arrière est affichée à la fin). La configuration Nginx n'est installée qu'à la première installation : Certbot la complète ensuite pour le HTTPS, une mise à jour ne la remplace donc pas.
 
 ## Catalogue et sauvegardes
 

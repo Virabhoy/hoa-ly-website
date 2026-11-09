@@ -3,7 +3,7 @@ import { getStore } from "@/lib/store";
 import { STORE_HOURS } from "@/lib/constants";
 import type { Category, Collection, Product } from "./types";
 
-// Lectures du site public. Les données viennent du stockage actif (local ou Supabase).
+// Lectures du site public. Les données viennent du stockage actif (fichiers ou PostgreSQL).
 // `cache` évite de relire le catalogue plusieurs fois pendant le rendu d'une même page.
 
 const byOrder = <T extends { display_order: number }>(a: T, b: T) => a.display_order - b.display_order;
@@ -62,9 +62,10 @@ export async function getProductsByCollection(collectionId: string): Promise<Pro
 
 export async function getStoreHours(): Promise<Record<string, string>> {
   const hours = (await loadSettings()).store_hours;
-  return hours && typeof hours === "object" && !Array.isArray(hours)
-    ? (hours as Record<string, string>)
-    : STORE_HOURS;
+  if (!hours || typeof hours !== "object" || Array.isArray(hours)) return STORE_HOURS;
+  // Ne garde que des textes : une valeur mal formée ne doit pas casser les pages.
+  const valid = Object.entries(hours).filter((e): e is [string, string] => typeof e[1] === "string");
+  return valid.length ? Object.fromEntries(valid) : STORE_HOURS;
 }
 
 /** Texte du bandeau d'annonce s'il est activé dans l'admin, sinon null. */
