@@ -1,4 +1,4 @@
-import sharp from "sharp";
+import type SharpModule from "sharp";
 import { ValidationError } from "./types";
 
 /*
@@ -14,6 +14,19 @@ export const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 const MAX_DIMENSION = 2400;
 
 const PIXEL_LIMIT = 60_000_000;
+
+/**
+ * sharp (bibliothèque native) n'est chargé qu'au moment de traiter une photo.
+ * Les pages publiques importent le stockage sans jamais en dépendre : sur certains hébergeurs
+ * (Vercel avec Turbopack), sa bibliothèque native peut manquer et faisait planter toutes les pages.
+ */
+async function loadSharp(): Promise<typeof SharpModule> {
+  try {
+    return (await import("sharp")).default;
+  } catch {
+    throw new ValidationError("Le traitement des photos n'est pas disponible sur cet hébergement.");
+  }
+}
 
 function startsWith(bytes: Buffer, signature: number[], offset = 0): boolean {
   return signature.every((b, i) => bytes[offset + i] === b);
@@ -46,6 +59,7 @@ export async function processImage(file: File): Promise<ProcessedImage> {
   const input = Buffer.from(await file.arrayBuffer());
   if (!hasImageSignature(input)) throw new ValidationError("Ce fichier n'est pas une image valide.");
 
+  const sharp = await loadSharp();
   try {
     const data = await sharp(input, { limitInputPixels: PIXEL_LIMIT })
       .rotate()
@@ -72,6 +86,7 @@ export interface CropArea {
  */
 export async function cropImage(input: Buffer, area: CropArea, targetWidth?: number): Promise<ProcessedImage> {
   if (!hasImageSignature(input)) throw new ValidationError("Ce fichier n'est pas une image valide.");
+  const sharp = await loadSharp();
   try {
     const meta = await sharp(input, { limitInputPixels: PIXEL_LIMIT }).metadata();
     // Dimensions telles qu'affichées, orientation de l'appareil photo appliquée.
